@@ -1,0 +1,240 @@
+/* Nav Bar CSS Begins Here */
+
+
+
+main{
+    margin: 0;
+}
+
+
+.bg-image{
+  width: 100%;
+  height: 88vh;
+  overflow: hidden;
+  background: url('../img/bg-6.jpg') ;
+}
+
+.push-left{
+  margin-left: 250px;
+}
+
+
+
+.form-container{
+  padding: 20px 20px;
+  margin-top: 140px;
+  -webkit-box-shadow: -1px 4px 26px 11px rgba(0,0,0,0.75);
+  -moz-box-shadow: -1px 4px 26px 11px rgba(0,0,0,0.75);
+  box-shadow: -1px 4px 26px 11px rgba(0,0,0,0.75);
+  border-radius: 10px;
+  color: #000000;
+  background: rgba(255, 252, 252, 0.932);
+}
+
+
+
+.a-text{
+  color: #a4644f;
+}
+
+.text-small{
+  font-size: small;
+}
+
+.a-text:hover{
+  color: green;
+}
+
+.page-holder {
+  min-height: 100vh;
+}
+
+.bg-cover {
+  background-size: cover !important;
+}
+
+
+.a-content{
+
+  font-size: 28px;
+}
+
+
+
+ body{
+     overflow-x: hidden;
+ }
+
+
+/* MEDIA QUERY 
+the codes below will fix the image size and the 
+border on the last box on all screen sizes 
+*/
+
+@media screen and (max-width: 992px) {
+  .tanker {
+    width: 100%;
+  }
+}
+
+
+@media screen and (max-width: 985px) {
+  .tanker {
+    width: 200%;
+  }
+
+
+
+
+@media screen and (max-width: 970px) {
+  .tanker {
+    width: 200%;
+  }
+
+  .push-down{
+    padding-bottom: 0px;
+  }
+}
+
+
+@media screen and (max-width: 768px) {
+  .tanker {
+    width: 40%;
+
+  }
+
+  .push-left{
+    margin-left: 200px;
+  }
+
+  .push-down{
+    padding-bottom: 0px;
+  }
+}
+
+@media screen and (max-width: 414px) {
+  .tanker {
+    width: 25%;
+  }
+
+  .push-left{
+    margin-left: 20px;
+    margin-bottom: 10px;
+  }
+
+}
+
+@media screen and (max-width: 375px) {
+  .push-left{
+    margin-left: 0;
+    margin-bottom: 10px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .tanker {
+    width: 25%;
+  }
+}
+
+@media screen and (max-width: 320px) {
+  .tanker {
+    width: 25%;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+.banner{
+    height: 100vh;
+    width: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.img-banner{
+    width: 95%;
+    height: 95%;
+    transform: translateY(10%);
+    margin-left: 20px;
+    overflow: hidden;
+}
+
+.copyright{
+    background: cornsilk;
+    margin-bottom: -16px;
+}
+.footer{
+    background: #f5c938;
+    margin-top: 95px;
+}
+
+
+
+.wrapper {    
+  margin-top: 80px;
+  margin-bottom: 20px;
+}
+
+.form-signin {
+  max-width: 420px;
+  padding: 30px 38px 66px;
+  margin: 0 auto;
+  background-color: #eee;
+  border: 3px dotted rgba(0,0,0,0.1);  
+  }
+
+.form-signin-heading {
+  text-align:center;
+  margin-bottom: 30px;
+}
+
+.form-control {
+  position: relative;
+  font-size: 16px;
+  height: auto;
+  padding: 10px;
+}
+
+
+
+input[type="text"] {
+  margin-bottom: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+input[type="password"] {
+  margin-bottom: 20px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.colorgraph {
+  height: 7px;
+  border-top: 0;
+  background: #c4e17f;
+  border-radius: 5px;
+  background-image: -webkit-linear-gradient(left, #c4e17f, #c4e17f 12.5%, #f7fdca 12.5%, #f7fdca 25%, #fecf71 25%, #fecf71 37.5%, #f0776c 37.5%, #f0776c 50%, #db9dbe 50%, #db9dbe 62.5%, #c49cde 62.5%, #c49cde 75%, #669ae1 75%, #669ae1 87.5%, #62c2e4 87.5%, #62c2e4);
+  background-image: -moz-linear-gradient(left, #c4e17f, #c4e17f 12.5%, #f7fdca 12.5%, #f7fdca 25%, #fecf71 25%, #fecf71 37.5%, #f0776c 37.5%, #f0776c 50%, #db9dbe 50%, #db9dbe 62.5%, #c49cde 62.5%, #c49cde 75%, #669ae1 75%, #669ae1 87.5%, #62c2e4 87.5%, #62c2e4);
+  background-image: -o-linear-gradient(left, #c4e17f, #c4e17f 12.5%, #f7fdca 12.5%, #f7fdca 25%, #fecf71 25%, #fecf71 37.5%, #f0776c 37.5%, #f0776c 50%, #db9dbe 50%, #db9dbe 62.5%, #c49cde 62.5%, #c49cde 75%, #669ae1 75%, #669ae1 87.5%, #62c2e4 87.5%, #62c2e4);
+  background-image: linear-gradient(to right, #c4e17f, #c4e17f 12.5%, #f7fdca 12.5%, #f7fdca 25%, #fecf71 25%, #fecf71 37.5%, #f0776c 37.5%, #f0776c 50%, #db9dbe 50%, #db9dbe 62.5%, #c49cde 62.5%, #c49cde 75%, #669ae1 75%, #669ae1 87.5%, #62c2e4 87.5%, #62c2e4);
+}
+
+
+
+.login {
+  margin-bottom: 0px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
