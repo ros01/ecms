@@ -1,0 +1,122 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" type="text/css" href="{% static 'fontawesome-free-5.8.2-web/css/all.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+
+
+
+<title>RRBN ECMS {% block title %}{% endblock %}</title>
+
+
+
+
+</head>
+
+<body>
+<header>
+  <div class="row mt-2">
+            <div class="col-md-12">
+                <nav class="navbar">
+                    <div class="navbar-brand text-white">
+                        RRBN-EDMS
+                    </div>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <a class="btn btn-warning text-white" href="{% url 'accounts:login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-warning text-white ml-3" href="{% url 'accounts:create_portal_account' %}">Sign Up</a>
+                        </li>
+
+                    </ul>
+                </nav><br>
+                
+           </div>
+        </div>
+
+</header>
+  {% block styles %} {% endblock %}
+
+  {% block content%}
+
+  {% endblock %}
+   <footer class="footer"><br><br>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-sm-12">
+                    <p class="text-white ft">RRBN</p>
+                    <p class="text-white">
+                        RRBN's key mandate is to regulate the practice of radiography in Nigeria.
+                    </p>
+                </div>
+                <div class="col-md-3 col-sm-12">
+                    <p class="text-white ft">External Links</p>
+                    <a class="text-white flink ft" href="#">RRBN</a><br />
+                    <a class="text-white flink ft" href="#">ARN</a><br />
+                    <a class="text-white flink ft" href="#">NJIRT</a><br />
+                    <a class="text-white flink ft" href="#">MINISTRY OF HEALTH</a>
+                </div>
+                <div class="col-md-3 col-sm-12">
+                    <p class="text-white ft">Contact Us</p>
+                    <p class="text-white flink ft">
+                        Federal Secretariat Complex, Phase I, Annex III, 4th Floor, <br>Central Area - Abuja, Nigeria.
+                    </p>
+                    <p class="text-white ft">+234 092914928</p>
+                    <p class="text-white ft">info@rrbn.gov.ng</p>
+                    <p class="text-white ft">www.rrbn.gov.ng</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div class="copyright">
+        <div class="copyright-container">
+            <center>
+                <p>&copy All Rights Reserved RRBN 2021</p>
+            </center>
+        </div>
+    </div>
+
+  </body>
+
+<script src="{% static 'bootstrap/js/jquery-3.3.1.slim.min.js' %}"></script>
+
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+
+
+
+        
+        
+
+
+
+
+
+      <script>
+          // Example starter JavaScript for disabling form submissions if there are invalid fields
+          (function () {
+              'use strict';
+              window.addEventListener('load', function () {
+                  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                  var forms = document.getElementsByClassName('needs-validation');
+                  // Loop over them and prevent submission
+                  var validation = Array.prototype.filter.call(forms, function (form) {
+                      form.addEventListener('submit', function (event) {
+                          if (form.checkValidity() === false) {
+                              event.preventDefault();
+                              event.stopPropagation();
+                          }
+                          form.classList.add('was-validated');
+                      }, false);
+                  });
+              }, false);
+          })();
+      </script>
+  </body>
+</html>
