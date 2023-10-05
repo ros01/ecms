@@ -33,7 +33,7 @@ class Document(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created = models.DateTimeField(default=timezone.now)
     modified = models.DateTimeField(default=timezone.now)
-    commented = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comments_by', blank=True, null=True)
+    comments_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='comments_by')
     staff_comments = models.ForeignKey(StaffComments, on_delete=models.CASCADE, null=True) 
     
 
