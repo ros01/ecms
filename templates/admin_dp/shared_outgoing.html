@@ -23,7 +23,8 @@
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="{% url 'admin_dp:files_all' %}">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+<!-- <a class="nk-fmg-menu-item" href="{% url 'admin_dp:files_all' %}"> -->
 <em class="icon ni ni-file-docs"></em>
 <span class="nk-fmg-menu-text">Files</span>
 </a>
@@ -41,13 +42,13 @@
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="html/apps/recovery.html">
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:recover_files' %}">
 <em class="icon ni ni-trash-alt"></em>
 <span class="nk-fmg-menu-text">Recovery</span>
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="html/apps/settings.html">
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:file_settings' %}">
 <em class="icon ni ni-setting-alt"></em>
 <span class="nk-fmg-menu-text">Settings</span>
 </a>

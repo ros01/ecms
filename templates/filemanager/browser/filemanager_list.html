@@ -1,4 +1,6 @@
 {% extends "filemanager/filemanager_base.html" %}
+{% load static %}
+{% load static file_extension info_value %}
 
 {% load i18n static %}
 
@@ -70,8 +72,10 @@
           <td class="clickable-row">{{file.filename}}</td>
           <td>{{file.filesize}}</td>
           <td>{{file.filedate}}</td>
+
+          
           </a>
-            {% if not popup %}<td><a class="file-info-button" href="#" data-href="{% url 'filemanager:detail' %}?path={{file.filepath}}"><span><i class="fa fa-info-circle"></i></span></a></td>{% endif %}
+            {% if not popup %}<td><a class="file-info-button" href="#" data-href="{% url 'filemanager:detail' %}?path={{file.filepath.url}}"><span><i class="fa fa-info-circle"></i></span></a></td>{% endif %}
         </tr>
 
         {% else %}
@@ -123,7 +127,7 @@
 
 
 <script src="{% static 'js/other.js' %}"></script>
-<script src="{% static 'js/checkbox.js' %}"></script>
+<!-- <script src="{% static 'js/checkbox.js' %}"></script>
 <script src="{% static 'js/jszip-utils.js' %}"></script>
 <script src="{% static 'js/zip_down.js' %}"></script>
 <script src="{% static 'js/FileSaver.js' %}"></script>
@@ -131,5 +135,5 @@
 
 <script src="{% static 'js/vendor/jquery.ui.widget.js' %} "></script>
 <script src="{% static 'js/jquery.iframe-transport.js' %} "></script>
-<script src="{% static 'js/jquery.fileupload.js' %} "></script>
+<script src="{% static 'js/jquery.fileupload.js' %} "></script> -->
 {% endblock %}

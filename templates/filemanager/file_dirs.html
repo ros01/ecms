@@ -1,5 +1,6 @@
 {% extends 'base_admin.html' %}
 {% load static %}
+{% load crispy_forms_tags %}
 {% load static file_extension info_value %}
 {% block title%}| Admin Deptartment Dashboard {% endblock %}
 
@@ -23,11 +24,11 @@
   }
 </style>
 {% endblock extrastyle %}
-
+<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
 
 {% block content %}                
 
-
+<!-- {% include "_modal.html" %} -->
 
 <!-- content @s -->
 <div class="nk-content p-0">
@@ -75,12 +76,12 @@
 </a>
 </li>
 
-<li>
+<!-- <li>
 <a class="nk-fmg-menu-item" href="{% url 'admin_dp:index' %}">
 <em class="icon ni ni-setting-alt"></em>
 <span class="nk-fmg-menu-text">Index</span>
 </a>
-</li>
+</li> -->
 
 
 </ul>
@@ -233,6 +234,7 @@
 <div class="toggle-expand-content expanded" data-content="quick-access">
 
 <div class="nk-files nk-files-view-grid">
+{% include 'partials/_alerts.html' %} 
 
 
 <div class="nk-files-list">
@@ -266,35 +268,54 @@
 <th scope="col">File Type</th>
 <th scope="col">Actions</th>
 </tr>
+
+
 {% for file in files %}
 <tr data-bs-toggle="tooltip" title="{{file.file_path|info_value}}">
 <td>
 <span>
-{{ file.filename }}
+{{ file.filename }} 
 </span>
 </td>
 <td>{{ file.filename|file_extension|cut:"."|upper }}</td>
+
 <td>
 <div class="d-flex align-items-center actions">
-<span data-bs-toggle="modal" data-bs-target="#info-{{forloop.counter}}">
-<i title="Info" class="fa-solid fa-info text-success"></i>
-</span>
+
 
 <div class="dot-separator mx-2"></div>
+<a href="{% url 'filemanager:file_detail' file.file|encoded_file_path %}"><em class="icon ni ni-zoom-in text-success"></em></a>
 
+
+
+
+<div class="dot-separator mx-2"></div>
+<span data-bs-toggle="modal"  data-bs-target="#info-{{forloop.counter}}">
+<i title="Info" class="fa-solid fa-info text-danger"></i>
+</span>
+
+
+<div class="dot-separator mx-2"></div>
 <span data-bs-toggle="modal" data-bs-target="#file-{{forloop.counter}}">
 <i title="View" class="fa-solid fa-eye text-primary"></i>
 </span>
 
 <div class="dot-separator mx-2"></div>
-
 <span data-bs-toggle="modal" data-bs-target="#delete-{{forloop.counter}}">
 <i title="Delete" class="fa-solid fa-trash text-danger"></i>
 </span>
 
+
+<div class="dot-separator mx-2"></div>
+<a href="#file-share-{{forloop.counter}}" data-toggle="modal"><em class="icon ni ni-share"></em></a>
+
+
+
 </div>
+
 </td>
 </tr>
+
 
 <!-- Modal -->
 <div class="modal fade" id="file-{{forloop.counter}}" data-bs-backdrop="static" data-bs-keyboard="false"
@@ -328,6 +349,7 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 </div>
+
 <!-- Delete Modal -->
 <div class="modal fade" id="delete-{{forloop.counter}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog">
@@ -345,12 +367,13 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 </div>
+
 <!-- Info Modal -->
 <div class="modal fade" id="info-{{forloop.counter}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog">
 <div class="modal-content">
 <div class="modal-header">
-<h1 class="modal-title fs-5" id="exampleModalLabel">File Info</h1>
+<h5 class="modal-title fs-5" id="exampleModalLabel">File Info</h5>
 <div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
 <i class="fa-solid fa-circle-xmark fs-5"></i>
 </div>
@@ -362,14 +385,165 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <label for="" class="form-label">File Info</label>
 <input type="text" value="{{file.file_path|info_value}}" name="info" id="" class="form-control">
 </div>
+
+<div class="form-group mb-2">
+<label for="" class="form-label">File Path</label>
+
+<input type="text" value="{{file.file_path}}" name="info" id="" class="form-control">
+</div>
+
+
 <div class="d-flex justify-content-end">
 <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save</button>
 </div>
 </form>
+{{ file.filename}}
+
+{% for comment in file.staff_comments.all %}
+{{ comment.comments }}
+{% endfor %}
+
+
 </div>
 </div>
 </div>
 </div>
+
+<!-- Detail Modal -->
+<div class="modal fade" tabindex="-1" role="dialog" id="file-detail-{{forloop.counter}}">
+<div class="modal-dialog modal-md" role="document">
+<div class="modal-content">
+<div class="modal-header align-center">
+<div class="nk-file-title">
+<form action="{% url 'filemanager:share_file' file.file|encoded_file_path %}" method="post">
+{% csrf_token %}
+<div class="nk-file-name">
+<div class="nk-file-name"><span class="title">{{ file.filename }}</span></div>
+<div class="nk-file-name-sub">12.0MB</div>
+</div>
+</div>
+<a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
+</div>
+<div class="modal-body p-0">
+<div class="nk-file-share-header">
+<div class="nk-file-share-group">
+<div class="nk-file-share-input-group">
+<div class="nk-file-share-input nk-file-share-input-to">
+{{ form.share_with|as_crispy_field }}
+</div>
+<input type="hidden" value="{{file.filename}}" name="filename" id="" class="form-control">
+
+<input type="hidden" value="{{file.file|encoded_file_path}}" name="encoded_path" id="" class="form-control">
+<input type="hidden" value="{{file.file_path}}" name="path" id="" class="form-control">
+<div class="form-group mb-2">
+<label for="" class="form-label">Remarks</label>
+<input type="text" placeholder="Add Remarks" name="remarks" id="" class="form-control">
+</div>
+ </div>
+</div>
+</div>
+</div><!-- .modal-body -->
+
+<div class="modal-footer bg-light">
+<button type="submit" class="btn btn-primary">Share</button>
+</div><!-- .modal-footer -->
+</div><!-- .modal-content -->
+</form>
+</div><!-- .modla-dialog -->
+</div><!-- .modal -->
+
+
+
+<!-- @@ Share File Modal @e -->
+<div class="modal fade" tabindex="-1" role="dialog" id="file-share-{{forloop.counter}}">
+<div class="modal-dialog modal-md" role="document">
+<div class="modal-content">
+<div class="modal-header align-center">
+<div class="nk-file-title">
+<!-- <div class="nk-file-icon">
+<span class="nk-file-icon-type">
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 72 72">
+<path fill="#6C87FE" d="M57.5,31h-23c-1.4,0-2.5-1.1-2.5-2.5v-10c0-1.4,1.1-2.5,2.5-2.5h23c1.4,0,2.5,1.1,2.5,2.5v10
+C60,29.9,58.9,31,57.5,31z" />
+<path fill="#8AA3FF" d="M59.8,61H12.2C8.8,61,6,58,6,54.4V17.6C6,14,8.8,11,12.2,11h18.5c1.7,0,3.3,1,4.1,2.6L38,24h21.8
+c3.4,0,6.2,2.4,6.2,6v24.4C66,58,63.2,61,59.8,61z" />
+<path display="none" fill="#8AA3FF" d="M62.1,61H9.9C7.8,61,6,59.2,6,57c0,0,0-31.5,0-42c0-2.2,1.8-4,3.9-4h19.3
+c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v31C66,59.2,64.2,61,62.1,61z" />
+<path fill="#798BFF" d="M7.7,59c2.2,2.4,4.7,2,6.3,2h45c1.1,0,3.2,0.1,5.3-2H7.7z" />
+</svg>
+</span>
+</div> -->
+
+<form action="{% url 'filemanager:share_file' file.file|encoded_file_path %}" method="post">
+{% csrf_token %}
+<div class="nk-file-name">
+<div class="nk-file-name"><span class="title">{{ file.filename }}</span></div>
+<div class="nk-file-name-sub">12.0MB</div>
+</div>
+</div>
+<a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
+</div>
+<div class="modal-body p-0">
+<div class="nk-file-share-header">
+<div class="nk-file-share-group">
+<div class="nk-file-share-input-group">
+<div class="nk-file-share-input nk-file-share-input-to">
+<!-- <label class="label">To</label> -->
+<!-- <input type="text" class="input-mail tagify" placeholder="Email or Name" data-whitelist="team@softnio.com, help@softnio.com, contact@softnio.com"> -->
+{{ form.share_with|as_crispy_field }}
+</div>
+
+<!-- <div class="form-group mb-2">
+<label for="" class="form-label">File Name</label> -->
+<input type="hidden" value="{{file.filename}}" name="filename" id="" class="form-control">
+<!-- </div> -->
+
+<input type="hidden" value="{{file.file|encoded_file_path}}" name="encoded_path" id="" class="form-control">
+
+
+<!-- <div class="form-group mb-2">
+<label for="" class="form-label">File Path</label> -->
+<input type="hidden" value="{{file.file_path}}" name="path" id="" class="form-control">
+<!-- </div> -->
+
+<!-- div class="form-group mb-2">
+<label for="" class="form-label">Author</label>
+<input type="text" value="{{request.user}}" name="author" id="" class="form-control">
+</div> -->
+
+<div class="form-group mb-2">
+<label for="" class="form-label">Remarks</label>
+<input type="text" placeholder="Add Remarks" name="remarks" id="" class="form-control">
+</div>
+ </div>
+<!-- <ul class="nk-file-share-nav">
+<li><span class="badge badge-sm badge-outline-gray">Can View</span></li>
+</ul> -->
+</div>
+</div>
+<!-- <div class="nk-file-share-editor">
+<div class="nk-file-share-field">
+<textarea class="form-control form-control-simple no-resize ex-large" placeholder="Add a Message (optional)"></textarea>
+</div>
+</div> -->
+<!-- .nk-file-share-editor -->
+</div><!-- .modal-body -->
+
+<div class="modal-footer bg-light">
+<button type="submit" class="btn btn-primary">Share</button>
+<!-- ul class="btn-toolbar g-3">
+
+<button type="submit" class="btn btn-default">Create Directory</button>
+<li><a href="#" data-dismiss="modal" class="btn btn-outline-light btn-white">Cancel</a></li>
+<li><a href="#" class="btn btn-primary">Share</a></li>
+</ul> -->
+</div><!-- .modal-footer -->
+</div><!-- .modal-content -->
+</form>
+</div><!-- .modla-dialog -->
+</div><!-- .modal -->
+
+
 {% endfor %}
 </table>
 </div>
@@ -377,40 +551,21 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 
 
 <div class="row mx-3">   
-
-
 <p class="lead">No files found!</p>
-
 </div>
-
 {% endif %}
 
 
 <div class="d-flex justify-content-end">   
-
 <a href="{% url 'filemanager:file_manager' %}" class="btn btn-primary py-1 px-2 mr-3 mt-2 mb-4 "><i class="fa-solid fa-backward"></i><span class="ml-1"> File Manager Home</span></a>
-
-
-
-
-
-
 </div>
 </div>
-
-
-
-
 </div>
 </div>
 
 {% else %}
-
-
 {% for directory in directories %}
 {% include 'includes/subdirectories.html' with directory=directory depth=depth|add:"3" %}
-
-
 
 <div class="nk-file-item nk-file">
 <div class="nk-file-info">
@@ -440,8 +595,6 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 </div>
 {% endfor %}
 {% endif %}
-
-
 </div>
 </div><!-- .nk-files -->
 </div>
@@ -456,11 +609,13 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 </div>
 
 
+
 <!-- content @e -->
-
-
-
 {% block extrascripts %}
+
+
+
+
 
 <script>
   function submitForm() {
@@ -478,64 +633,15 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
   })
 </script>
 
+<script src="{% static 'js/bootstrap5.modal.forms.min.js' %}"></script>
 {% endblock extrascripts %}
 
+<!-- <script src="{% static 'js/filemanager.js' %}"></script>
 
-<!-- @@ Share File Modal @e -->
-    <div class="modal fade" tabindex="-1" role="dialog" id="file-share">
-        <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-                <div class="modal-header align-center">
-                    <div class="nk-file-title">
-                        <div class="nk-file-icon">
-                            <span class="nk-file-icon-type">
-                                <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 72 72">
-                                    <path fill="#6C87FE" d="M57.5,31h-23c-1.4,0-2.5-1.1-2.5-2.5v-10c0-1.4,1.1-2.5,2.5-2.5h23c1.4,0,2.5,1.1,2.5,2.5v10
-    C60,29.9,58.9,31,57.5,31z" />
-                                    <path fill="#8AA3FF" d="M59.8,61H12.2C8.8,61,6,58,6,54.4V17.6C6,14,8.8,11,12.2,11h18.5c1.7,0,3.3,1,4.1,2.6L38,24h21.8
-    c3.4,0,6.2,2.4,6.2,6v24.4C66,58,63.2,61,59.8,61z" />
-                                    <path display="none" fill="#8AA3FF" d="M62.1,61H9.9C7.8,61,6,59.2,6,57c0,0,0-31.5,0-42c0-2.2,1.8-4,3.9-4h19.3
-    c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v31C66,59.2,64.2,61,62.1,61z" />
-                                    <path fill="#798BFF" d="M7.7,59c2.2,2.4,4.7,2,6.3,2h45c1.1,0,3.2,0.1,5.3-2H7.7z" />
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="nk-file-name">
-                            <div class="nk-file-name-text"><span class="title">Departmental Imprest</span></div>
-                            <div class="nk-file-name-sub">394.87 MB</div>
-                        </div>
-                    </div>
-                    <a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="nk-file-share-header">
-                        <div class="nk-file-share-group">
-                            <div class="nk-file-share-input-group">
-                                <div class="nk-file-share-input nk-file-share-input-to">
-                                    <label class="label">To</label>
-                                    <input type="text" class="input-mail tagify" placeholder="Email or Name" data-whitelist="team@softnio.com, help@softnio.com, contact@softnio.com">
-                                </div>
-                            </div>
-                            <ul class="nk-file-share-nav">
-                                <li><span class="badge badge-sm badge-outline-gray">Can View</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="nk-file-share-editor">
-                        <div class="nk-file-share-field">
-                            <textarea class="form-control form-control-simple no-resize ex-large" placeholder="Add a Message (optional)"></textarea>
-                        </div>
-                    </div><!-- .nk-file-share-editor -->
-                </div><!-- .modal-body -->
-                <div class="modal-footer bg-light">
-                    <ul class="btn-toolbar g-3">
-                        <li><a href="#" data-dismiss="modal" class="btn btn-outline-light btn-white">Cancel</a></li>
-                        <li><a href="#" class="btn btn-primary">Share</a></li>
-                    </ul>
-                </div><!-- .modal-footer -->
-            </div><!-- .modal-content -->
-        </div><!-- .modla-dialog -->
-    </div><!-- .modal -->
+
+{% include 'filemanager/file_detail_modal.html' %}
+<script src="{% static 'js/other.js' %}"></script> -->
+
     <!-- @@ Copy File Modal @e -->
     <div class="modal fade" tabindex="-1" role="dialog" id="file-copy">
         <div class="modal-dialog modal-md" role="document">

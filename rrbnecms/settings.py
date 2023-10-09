@@ -48,7 +48,9 @@ INSTALLED_APPS = [
     'filemanager',
     'pages',
     'crispy_forms',
+    'crispy_bootstrap4',
     'django_htmx',
+    'bootstrap_modal_forms',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -92,7 +94,7 @@ WSGI_APPLICATION = 'rrbnecms.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'rrbnecms',
+        'NAME': 'rrbnecmsdb1',
         'USER': 'postgres',
         'PASSWORD': 'blackstone1',
         'HOST': 'localhost',

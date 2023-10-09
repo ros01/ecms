@@ -1,0 +1,516 @@
+{% extends 'base_admin.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load static file_extension info_value %}
+{% block title%}| Admin Deptartment Dashboard {% endblock %}
+
+
+{% block extrastyle %}
+<style>
+  ul li {
+    list-style-type: none;
+  }
+  .dot-separator {
+    height: 2px;
+    width: 2px;
+    background: #000;
+    border-radius: 50%;
+  }
+  .actions span {
+    cursor: pointer;
+  }
+  .modal {
+    z-index: 99999 !important;
+  }
+</style>
+{% endblock extrastyle %}
+<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+
+{% block content %}                
+
+<!-- {% include "_modal.html" %} -->
+
+<!-- content @s -->
+<div class="nk-content p-0">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="nk-fmg">
+<div class="nk-fmg-aside" data-content="files-aside" data-toggle-overlay="true" data-toggle-body="true" data-toggle-screen="lg" data-simplebar>
+<div class="nk-fmg-aside-wrap">
+<div class="nk-fmg-aside-top">
+<ul class="nk-fmg-menu">
+<li class="active">
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:admin_dashboard' %}">
+<em class="icon ni ni-home-alt"></em>
+<span class="nk-fmg-menu-text">Home</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+<em class="icon ni ni-file-docs"></em>
+<span class="nk-fmg-menu-text">Files</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:starred_files' %}">
+<em class="icon ni ni-star"></em>
+<span class="nk-fmg-menu-text">Starred</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:shared_files' %}">
+<em class="icon ni ni-share-alt"></em>
+<span class="nk-fmg-menu-text">Shared</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:recover_files' %}">
+<em class="icon ni ni-trash-alt"></em>
+<span class="nk-fmg-menu-text">Recovery</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:file_settings' %}">
+<em class="icon ni ni-setting-alt"></em>
+<span class="nk-fmg-menu-text">Settings</span>
+</a>
+</li>
+
+<!-- <li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:index' %}">
+<em class="icon ni ni-setting-alt"></em>
+<span class="nk-fmg-menu-text">Index</span>
+</a>
+</li> -->
+
+
+</ul>
+</div>
+<div class="nk-fmg-aside-bottom">
+<div class="nk-fmg-status">
+<h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Storage</span></h6>
+<div class="progress progress-md bg-light">
+<div class="progress-bar" data-progress="5"></div>
+</div>
+<div class="nk-fmg-status-info">12.47 GB of 50 GB used</div>
+<div class="nk-fmg-status-action">
+<a href="#" class="link link-primary link-sm">Upgrade Storage</a>
+</div>
+</div>
+<div class="nk-fmg-switch">
+<div class="dropdown">
+<a href="#" data-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">
+<div class="lead-text">Folder Assisgnment</div>
+<div class="sub-text">Only you</div>
+</a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#"><span>Team Folders</span></a></li>
+<li><a class="active" href="#"><span>My Folders</span></a></li>
+<li class="divider"></li>
+<li><a class="link" href="#"><span>Shared Folders</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><!-- .nk-fmg-aside -->
+
+
+
+
+
+
+
+
+
+
+<div id="file-dirs" class="nk-fmg-body">
+<div class="nk-fmg-body-head d-none d-lg-flex">
+<div class="nk-fmg-search">
+<em class="icon ni ni-search"></em>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search files, folders">
+</div>
+<div class="nk-fmg-actions">
+<ul class="nk-block-tools g-3">
+<li>
+<div class="dropdown">
+<a href="#" class="btn btn-light" data-toggle="dropdown"><em class="icon ni ni-plus"></em> <span>Create</span></a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#file-upload" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em><span>Upload File</span></a></li>
+<li><a href="#"><em class="icon ni ni-file-plus"></em><span>Create File</span></a></li>
+<li><a href="{% url 'admin_dp:create-directory' %}"><em class="icon ni ni-folder-plus"></em><span>Create Folder</span></a></li>
+</ul>
+</div>
+</div>
+</li>
+<li><a href="#file-upload" class="btn btn-primary" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em> <span>Upload</span></a></li>
+</ul>
+</div>
+</div>
+<div class="nk-fmg-body-content">
+<div class="nk-block-head nk-block-head-sm">
+<div class="nk-block-between position-relative">
+<div class="nk-block-head-content">
+<h6 class="nk-block-title page-title"><a href="{% url 'filemanager:file_manager' %}">Admin DP Documents Home</a></h6>
+</div>
+<div class="nk-block-head-content">
+<ul class="nk-block-tools g-1">
+<li class="d-lg-none">
+<a href="#" class="btn btn-trigger btn-icon search-toggle toggle-search" data-target="search"><em class="icon ni ni-search"></em></a>
+</li>
+<li class="d-lg-none">
+<div class="dropdown">
+<a href="#" class="btn btn-trigger btn-icon" data-toggle="dropdown"><em class="icon ni ni-plus"></em></a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#file-upload" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em><span>Upload File</span></a></li>
+<li><a href="#"><em class="icon ni ni-file-plus"></em><span>Create File</span></a></li>
+<li><a href="#"><em class="icon ni ni-folder-plus"></em><span>Create Folder</span></a></li>
+</ul>
+</div>
+</div>
+</li>
+<li class="d-lg-none mr-n1"><a href="#" class="btn btn-trigger btn-icon toggle" data-target="files-aside"><em class="icon ni ni-menu-alt-r"></em></a></li>
+</ul>
+</div>
+<div class="search-wrap px-2 d-lg-none" data-search="search">
+<div class="search-content">
+<a href="#" class="search-back btn btn-icon toggle-search" data-target="search"><em class="icon ni ni-arrow-left"></em></a>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search by user or message">
+<button class="search-submit btn btn-icon"><em class="icon ni ni-search"></em></button>
+</div>
+</div><!-- .search-wrap -->
+</div>
+</div>
+
+
+
+
+<div class="nk-fmg-quick-list nk-block">
+<!-- <div class="nk-block-head-xs">
+<div class="nk-block-between g-2">
+<div class="nk-block-head-content">
+<nav aria-label="breadcrumb">
+<ol class="breadcrumb">
+{% for breadcrumb in breadcrumbs %}
+{% if forloop.last %}
+<li class="breadcrumb-item active text-primary" aria-current="page">{{ breadcrumb.name }}</li>
+{% else %}
+{% if breadcrumb.name|lower == 'media' %}
+<li class="breadcrumb-item active text-primary" aria-current="page">{{ breadcrumb.name }}</li>
+{% else %}
+<li class="breadcrumb-item text-primary">
+{{ breadcrumb.name }}
+</li>
+{% endif %}
+{% endif %}
+{% endfor %}
+</ol>
+</nav>
+</div>
+
+
+<div class="nk-block-head-content">
+<a href="#" class="link link-primary toggle-opt active" data-target="quick-access">
+<div class="inactive-text">Show</div>
+<div class="active-text">Hide</div>
+</a>
+</div>
+</div>
+</div> -->
+
+<!-- .nk-block-head -->
+
+
+
+<!-- Start -->
+
+
+<div class="toggle-expand-content expanded" data-content="quick-access">
+
+<div class="nk-files nk-files-view-grid">
+{% include 'partials/_alerts.html' %} 
+
+
+<div class="nk-files-list">
+
+
+
+<div class="container-fluid py-4">
+<div class="row">
+<div class="col-lg-12 border py-2 bg-white">
+<!-- <div class="d-flex justify-content-start my-2 ml-2">
+<label for="fileInput">
+<i class="btn btn-primary" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em> <span>Upload File</span></i>
+
+</label>
+<form method="post" action="{% url 'filemanager:upload_file' %}" id="upload-file" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="hidden" name="directory" value="{{ selected_directory }}">
+<input id="fileInput" class="d-none" onchange="submitForm()" type="file" name="file" required>
+</form>
+</div> -->
+
+
+
+
+      
+
+
+<!-- content @s -->
+<div class="nk-content ">
+<div class="container-fluid">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="nk-block-head nk-block-head-sm">
+<div class="nk-block-between g-3">
+<div class="nk-block-head-content">
+<h3 class="nk-block-title page-title"> <strong class="text-success small">{{ document.filename}}</strong></h3>
+<!-- <div class="nk-block-des text-soft">
+    <ul class="list-inline">
+        <li>Application ID: <span class="text-base">KID000844</span></li>
+        <li>Submited At: <span class="text-base">18 Dec, 2019 01:02 PM</span></li>
+    </ul>
+</div> -->
+</div>
+<div class="nk-block-head-content">
+<a href="{% url 'filemanager:file_manager' %}" class="btn btn-outline-light bg-white d-none d-sm-inline-flex"><em class="icon ni ni-arrow-left"></em><span>Back</span></a>
+<a href="{% url 'filemanager:file_manager' %}" class="btn btn-icon btn-outline-light bg-white d-inline-flex d-sm-none"><em class="icon ni ni-arrow-left"></em></a>
+</div>
+</div>
+</div><!-- .nk-block-head -->
+<div class="nk-block">
+
+{% for comment in document.staff_comments.all %}
+<div class="row gy-5">
+
+<div class="col-lg-5">
+<div class="nk-block-head">
+    <div class="nk-block-head-content">
+        <h6 class="nk-block-title title">Staff Comment {{forloop.counter}}</h6>
+        <!-- <p>Submission date, approve date, status etc.</p> -->
+    </div>
+</div>
+
+<!-- .nk-block-head -->
+<div class="card card-bordered">
+    <ul class="data-list is-compact">
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Staff Name</div>
+                <div class="data-value">{{ comment.author.get_full_name }}</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Submitted At</div>
+                <div class="data-value">{{ comment.created }}</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Comments</div>
+                <div class="data-value"><span class="badge badge-dim badge-sm badge-outline-success">{{ comment.comments }}</span></div>
+            </div>
+        </li>
+        <!-- <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Modified</div>
+                <div class="data-value">
+                    <div class="user-card">
+                        <div class="user-avatar user-avatar-xs bg-orange-dim">
+                            <span>AB</span>
+                        </div>
+                        <div class="user-name">
+                            <span class="tb-lead">{{ comment.modified }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li> -->
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Modified</div>
+                <div class="data-value">{{ comment.modified }}</div>
+            </div>
+        </li>
+    </ul>
+</div><!-- .card -->
+<!-- <div class="nk-block-head">
+    <div class="nk-block-head-content">
+        <h5 class="nk-block-title title">Uploaded Documents</h5>
+        <p>Here is user uploaded documents.</p>
+    </div>
+</div> -->
+<!-- .nk-block-head -->
+<!-- <div class="card card-bordered">
+    <ul class="data-list is-compact">
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Document Type</div>
+                <div class="data-value">National ID Card</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Front Side</div>
+                <div class="data-value">National ID Card</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Back Side</div>
+                <div class="data-value">National ID Card</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Proof/Selfie</div>
+                <div class="data-value">National ID Card</div>
+            </div>
+        </li>
+    </ul>
+</div> -->
+<!-- .card -->
+</div>
+
+
+<!-- .col -->
+<!-- <div class="col-lg-7">
+<div class="nk-block-head">
+    <div class="nk-block-head-content">
+        <h5 class="nk-block-title title">Applicant Information</h5>
+        <p>Basic info, like name, phone, address, country etc.</p>
+    </div>
+</div> -->
+<!-- <div class="card card-bordered">
+    <ul class="data-list is-compact">
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">First Name</div>
+                <div class="data-value">Abu Bin</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Last Name</div>
+                <div class="data-value">Ishtiyak</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Email Address</div>
+                <div class="data-value">info@softnio.com</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Phone Number</div>
+                <div class="data-value text-soft"><em>Not available</em></div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Date of Birth</div>
+                <div class="data-value">28 Oct, 2015</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Full Address</div>
+                <div class="data-value">6516, Eldoret, Uasin Gishu, 30100</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Country of Residence</div>
+                <div class="data-value">Kenya</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Full Address</div>
+                <div class="data-value">6516, Eldoret, Uasin Gishu, 30100</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Wallet Type</div>
+                <div class="data-value">Bitcoin</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Wallet Address</div>
+                <div class="data-value text-break">1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX</div>
+            </div>
+        </li>
+        <li class="data-item">
+            <div class="data-col">
+                <div class="data-label">Telegram</div>
+                <div class="data-value">
+                    <span>@tokenlite</span> <a href="https://t.me/tokenlite" target="_blank"><em class="icon ni ni-telegram"></em></a>
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>
+</div> -->
+
+<!-- .col -->
+</div><!-- .row -->
+{% endfor %}
+</div><!-- .nk-block -->
+</div>
+</div>
+</div>
+</div>
+<!-- content @e -->
+
+
+</div>
+</div><!-- .nk-files -->
+</div>
+
+<!-- End  -->
+</div>
+</div><!-- .nk-fmg-body-content -->
+</div><!-- .nk-fmg-body -->
+</div><!-- .nk-fmg -->
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- content @e -->
+{% block extrascripts %}
+
+
+
+
+
+<script>
+  function submitForm() {
+    document.getElementById("upload-file").submit();
+  }
+  
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' || event.key === 'Esc' || event.key === 27) {
+      let files = document.getElementById('files-count').textContent;
+      for (let i = 1; i <= files; i++) {
+        let closeButtonElements = document.getElementById(`modal-close-btn-${i}`);
+        closeButtonElements.click();
+      }
+    }
+  })
+</script>
+
+{% endblock extrascripts %}
+
+{% endblock %}
