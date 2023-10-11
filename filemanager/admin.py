@@ -6,3 +6,4 @@ from .models import *
 admin.site.register(FileInfo)
 admin.site.register(Document)
 admin.site.register(StaffComments)
+admin.site.register(Folder)

@@ -1,0 +1,237 @@
+{% extends 'base_admin.html'%}
+{% load static %}
+{% block title%}| Planning Unit {% endblock %}
+
+
+
+{% block content %} 
+
+<!-- content @s -->
+<div class="nk-content p-0">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="nk-fmg">
+<div class="nk-fmg-aside" data-content="files-aside" data-toggle-overlay="true" data-toggle-body="true" data-toggle-screen="lg" data-simplebar>
+<div class="nk-fmg-aside-wrap">
+<div class="nk-fmg-aside-top">
+<ul class="nk-fmg-menu">
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'planning_dp:planning_dashboard' %}">
+<em class="icon ni ni-home-alt"></em>
+<span class="nk-fmg-menu-text">Home</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+<em class="icon ni ni-file-docs"></em>
+<span class="nk-fmg-menu-text">Files</span>
+</a>
+</li>
+<!-- <li>
+<a class="nk-fmg-menu-item" href="#">
+<em class="icon ni ni-star"></em>
+<span class="nk-fmg-menu-text">Starred</span>
+</a>
+</li> -->
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'planning_dp:shared_files' %}">
+<em class="icon ni ni-share-alt"></em>
+<span class="nk-fmg-menu-text">Shared</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'planning_dp:recover_files' %}">
+<em class="icon ni ni-trash-alt"></em>
+<span class="nk-fmg-menu-text">Recovery</span>
+</a>
+</li>
+<li class="active">
+<a class="nk-fmg-menu-item" href="{% url 'planning_dp:file_settings' %}">
+<em class="icon ni ni-setting-alt"></em>
+<span class="nk-fmg-menu-text">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="nk-fmg-aside-bottom">
+<div class="nk-fmg-status">
+<h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Storage</span></h6>
+<div class="progress progress-md bg-light">
+<div class="progress-bar" data-progress="5"></div>
+</div>
+<div class="nk-fmg-status-info">12.47 GB of 50 GB used</div>
+<div class="nk-fmg-status-action">
+<a href="#" class="link link-primary link-sm">Upgrade Storage</a>
+</div>
+</div>
+<div class="nk-fmg-switch">
+<div class="dropdown">
+<a href="#" data-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">
+<div class="lead-text">Personal</div>
+<div class="sub-text">Only you</div>
+</a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#"><span>Team Folders</span></a></li>
+<li><a class="active" href="#"><span>Personal</span></a></li>
+<li class="divider"></li>
+<li><a class="link" href="#"><span>Update Folders</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><!-- .nk-fmg-aside -->
+<div class="nk-fmg-body">
+<div class="nk-fmg-body-content">
+<div class="nk-block-head nk-block-head-md">
+<div class="nk-block-between position-relative">
+<div class="nk-block-head-content">
+<h3 class="nk-block-title page-title">Settings</h3>
+</div>
+<div class="nk-block-head-content">
+<ul class="nk-block-tools g-1">
+<li class="d-md-none">
+<a href="#" class="btn btn-trigger btn-icon search-toggle toggle-search" data-target="search"><em class="icon ni ni-search"></em></a>
+</li>
+<li class="d-md-none">
+<div class="dropdown">
+<a href="#" class="btn btn-trigger btn-icon" data-toggle="dropdown"><em class="icon ni ni-plus"></em></a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#"><em class="icon ni ni-upload-cloud"></em><span>Upload File</span></a></li>
+<li><a href="#"><em class="icon ni ni-folder-plus"></em><span>Create Folder</span></a></li>
+</ul>
+</div>
+</div>
+</li>
+<li class="d-md-none mr-n1"><a href="#" class="btn btn-trigger btn-icon toggle" data-target="files-aside"><em class="icon ni ni-menu-alt-r"></em></a></li>
+</ul>
+</div>
+<div class="search-wrap px-2 d-md-none" data-search="search">
+<div class="search-content">
+<a href="#" class="search-back btn btn-icon toggle-search" data-target="search"><em class="icon ni ni-arrow-left"></em></a>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search by user or message">
+<button class="search-submit btn btn-icon"><em class="icon ni ni-search"></em></button>
+</div>
+</div><!-- .search-wrap -->
+</div>
+</div><!-- .nk-block-head -->
+<ul class="nk-nav nav nav-tabs">
+<li class="nav-item">
+<a class="nav-link active" href="#">General</a>
+</li>
+<!-- <li class="nav-item">
+<a class="nav-link" href="#">Security</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Billings</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Notifications</a>
+</li> -->
+</ul><!-- .nk-nav -->
+<div class="nk-block nk-block-xs pt-0">
+<div class="user-card user-card-md py-md-5 py-4">
+<div class="user-avatar md">
+<span>AB</span>
+<a href="#" class="edit edit-upload"><em class="icon ni ni-img"></em></a>
+</div>
+<div class="user-info">
+<span class="lead-text">{{user.get_full_name}} <a href="#" class="edit"><em class="icon ni ni-pen2"></em></a></span>
+<span class="sub-text">{{user.email}} <a href="#" class="edit"><em class="icon ni ni-pen2"></em></a></span>
+</div>
+</div>
+<div class="user-plan-wrap">
+<div class="nk-block-subhead">
+<h6 class="overline-title">Configuration Details</h6>
+</div>
+<div class="user-plan">
+<div class="user-plan-info">
+<div class="user-plan-title"><em class="icon ni ni-hard-drive"></em> <span>RRBN ECMS</span></div>
+<div class="user-plan-status">12.47 GB / 50.00 GB</div>
+</div>
+<div class="user-plan-actions">
+<ul class="btn-toolbar align-center g-4">
+<li class="order-2 order-sm-1">
+<a href="#" class="link link-primary">See storge detials</a>
+</li>
+<li class="order-1 order-sm-2">
+<a href="#" class="btn btn-sm btn-primary">Upgrade Storage</a>
+</li>
+</ul>
+</div>
+<div class="user-plan-progress">
+<div class="progress progress-md bg-light">
+<div class="progress-bar" data-progress="5" style="width: 5%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="nk-data data-list data-list-s2 is-medium">
+<div class="data-head">
+<h6 class="overline-title">Personal Basic </h6>
+</div>
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Recovery Email</span>
+<span class="data-value">{{user.email}}</span>
+</div>
+<div class="data-col data-col-end"><a href="#" class="link link-primary">Edit</a></div>
+</div><!-- .data-item -->
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Phone Number</span>
+<span class="data-placeholder">Not added yet</span>
+</div>
+<div class="data-col data-col-end"><a href="#" class="link link-primary">Add Number</a></div>
+</div><!-- .data-item -->
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Date of Birth</span>
+<span class="data-value">29 Feb, 1986</span>
+</div>
+<div class="data-col data-col-end"><a href="#" class="link link-primary">Change</a></div>
+</div><!-- .data-item -->
+</div><!-- .nk-data -->
+<div class="nk-data data-list data-list-s2 is-medium">
+<div class="data-head">
+<h6 class="overline-title">Preferences</h6>
+</div>
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Language</span>
+<span class="data-value">English (United State)</span>
+</div>
+<div class="data-col data-col-end"><a href="#" data-toggle="modal" data-target="#profile-language" class="link link-primary">Change Language</a></div>
+</div><!-- .data-item -->
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Date Format</span>
+<span class="data-value">M d, YYYY</span>
+</div>
+<div class="data-col data-col-end"><a href="#" data-toggle="modal" data-target="#profile-language" class="link link-primary">Change</a></div>
+</div><!-- .data-item -->
+<div class="data-item">
+<div class="data-col">
+<span class="data-label">Timezone</span>
+<span class="data-value">West Central Africa (GMT +3)</span>
+</div>
+<div class="data-col data-col-end"><a href="#" data-toggle="modal" data-target="#profile-language" class="link link-primary">Change</a></div>
+</div><!-- .data-item -->
+</div><!-- .nk-data -->
+</div><!-- .nk-block -->
+</div><!-- .nk-fmg-body-content -->
+</div><!-- .nk-fmg-body -->
+</div><!-- .nk-fmg -->
+</div>
+</div>
+</div>
+<!-- content @e -->
+
+
+
+
+
+{% endblock %}

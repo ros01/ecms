@@ -12,6 +12,8 @@ from django.contrib.auth import get_user_model, update_session_auth_hash, authen
 from django.contrib import messages, auth
 from .forms import SignupForm
 
+User = get_user_model()
+
 AUTH_USER_MODEL = 'accounts.User'
 
 
@@ -33,6 +35,17 @@ class SignUpView(View):
             return render(request, self.template_name1)
         return render(request, self.template_name, {'form': form})
 
+
+# class Profile(DetailView):
+#     model = models.User
+#     slug_field = 'username'
+#     def get_context_data(self, request, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['username'] = request.user.username
+#         return context
+#     def get_success_url(self):
+#         return reverse_lazy('accounts:profile', kwargs={'slug': self.username})
+
 class LoginTemplateView(TemplateView):
     template_name = "accounts/login.html"
 
@@ -45,35 +58,33 @@ def login(request):
     if user is not None:
         auth_login(request, user)
         if user.department == 'ICT':
-            return redirect('sysadmin:sysadmin_dashboard')
+            return redirect('sys_admin:sys_admin_dashboard')
         if user.department == 'Admin':
             return redirect('admin_dp:admin_dashboard')
-        if user.department == 'Stores' and user.role == 'Stores':
-            return redirect('store:store_dashboard')
-        if user.department == 'Protocol' and user.role == 'Fleet Managment':
-            return redirect('fleet:fleet_dashboard')
-        if user.department == 'Procurement' and user.role == 'Procurement':
-            return redirect('procurement:procurement_dashboard')
         if user.department == 'Monitoring':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Registrars Office':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Registrations':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Hr':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Procurement':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Finance':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Audit':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'ICT':
-            return redirect('rrbnstaff:staff_dashboard')
-        if user.department == 'Stores':
-            return redirect('rrbnstaff:staff_dashboard')
+            return redirect('monitoring:monitoring_dashboard')
         if user.department == 'Protocol':
-            return redirect('rrbnstaff:staff_dashboard')
+            return redirect('protocol_unit:protocol_dashboard')
+        if user.department == 'Procurement':
+            return redirect('procurement_unit:procurement_dashboard')
+        if user.department == 'Registration':
+            return redirect('registration:registration_dashboard')
+        if user.department == 'Registrars Office':
+            return redirect('registrar_office:registrar_office_dashboard')
+        if user.department == 'Finance':
+            return redirect('faa:faa_dashboard')
+        if user.department == 'Planning':
+            return redirect('planning_dp:planning_dashboard')
+        if user.department == 'Legal':
+            return redirect('legal_unit:legal_dashboard')
+        if user.department == 'Servicom':
+            return redirect('servicom_unit:servicom_dashboard')
+        if user.department == 'Audit':
+            return redirect('audit_unit:audit_dashboard')
+        if user.department == 'Institute':
+            return redirect('institute:institute_dashboard')
+        if user.department == 'Stores':
+            return redirect('stores:stores_dashboard')
         else:
             messages.error(request, 'Please enter the correct email and password for your account. Note that both fields may be case-sensitive.')
             return redirect('accounts:signin')

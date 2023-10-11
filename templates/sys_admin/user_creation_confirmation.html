@@ -1,0 +1,178 @@
+{% extends 'base_admin.html'%}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block title%}| System Administration {% endblock %}
+
+
+
+{% block content %} 
+
+
+
+<!-- content @s -->
+<div class="nk-content p-0">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="nk-fmg">
+<div class="nk-fmg-aside" data-content="files-aside" data-toggle-overlay="true" data-toggle-body="true" data-toggle-screen="lg" data-simplebar>
+<div class="nk-fmg-aside-wrap">
+<div class="nk-fmg-aside-top">
+<ul class="nk-fmg-menu">
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:admin_dashboard' %}">
+<em class="icon ni ni-home-alt"></em>
+<span class="nk-fmg-menu-text">Home</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+<em class="icon ni ni-file-docs"></em>
+<span class="nk-fmg-menu-text">Files</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:starred_files' %}">
+<em class="icon ni ni-star"></em>
+<span class="nk-fmg-menu-text">Starred</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:shared_files' %}">
+<em class="icon ni ni-share-alt"></em>
+<span class="nk-fmg-menu-text">Shared</span>
+</a>
+</li>
+<li class="active">
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:recover_files' %}">
+<em class="icon ni ni-trash-alt"></em>
+<span class="nk-fmg-menu-text">Recovery</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'admin_dp:file_settings' %}">
+<em class="icon ni ni-setting-alt"></em>
+<span class="nk-fmg-menu-text">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="nk-fmg-aside-bottom">
+<div class="nk-fmg-status">
+<h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Storage</span></h6>
+<div class="progress progress-md bg-light">
+<div class="progress-bar" data-progress="5"></div>
+</div>
+<div class="nk-fmg-status-info">12.47 GB of 50 GB used</div>
+<div class="nk-fmg-status-action">
+<a href="#" class="link link-primary link-sm">Upgrade Storage</a>
+</div>
+</div>
+<div class="nk-fmg-switch">
+<div class="dropdown">
+<a href="#" data-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">
+<div class="lead-text">Personal</div>
+<div class="sub-text">Only you</div>
+</a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#"><span>Team Folders</span></a></li>
+<li><a class="active" href="#"><span>Personal</span></a></li>
+<li class="divider"></li>
+<li><a class="link" href="#"><span>Upgrade Folders</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><!-- .nk-fmg-aside -->
+<div class="nk-fmg-body">
+<div class="nk-fmg-body-head d-none d-lg-flex">
+<div class="nk-fmg-search">
+<em class="icon ni ni-search"></em>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search files, folders">
+</div>
+<div class="nk-fmg-actions">
+<ul class="nk-block-tools g-3">
+<li class="d-xl-none d-lg-inline-flex">
+<a href="#" class="btn btn-trigger btn-icon toggle-expand" data-target="filter-options"><em class="icon ni ni-opt"></em></a>
+</li>
+<li><a href="#" class="btn btn-round btn-light btn-icon"><em class="icon ni ni-setting"></em></a></li>
+</ul>
+</div>
+</div>
+
+
+<!-- content @s -->
+<div class="nk-content ">
+<div class="container-fluid">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="components-preview wide-md mx-auto">
+<!-- <div class="nk-block-head nk-block-head-lg wide-sm">
+<div class="nk-block-head-content">
+<div class="nk-block-head-sub"><a class="back-to" href="html/components.html"><em class="icon ni ni-arrow-left"></em><span>Components</span></a></div>
+<h2 class="nk-block-title fw-normal">Alerts Styles</h2>
+<div class="nk-block-des">
+<p class="lead">Provide contextual feedback messages for typical user actions with the handful of available and flexible alert messages.</p>
+</div>
+</div>
+</div> -->
+<div class="nk-block nk-block-lg">
+<div class="nk-block-head">
+<div class="nk-block-head-content">
+<h5 class="title nk-block-title">User Creation Confirmation</h5>
+<!-- <p>Alerts are available for any length of text. Use <code>.alert-{state}</code> with <code>.alert</code> to create alert messages.</p> -->
+</div>
+</div>
+<div class="card card-preview">
+<div class="card-inner">
+<div class="example-alerts">
+<div class="gy-4">
+
+<div class="example-alert">
+<div class="alert alert-success alert-icon">
+<em class="icon ni ni-check-circle"></em> <strong>User Creation Successfull</strong>. User can now login using his email and password.
+</div>
+</div>
+
+<div class="d-flex justify-content-end mb-2"> 
+<a href="{{request.META.HTTP_REFERER}}" class="btn btn-primary py-1 mr-3 mt-1"><i class="fas fa-angle-double-left" aria-hidden="true"></i> Go Back </a>
+</div>
+
+</div>
+</div>
+</div>
+</div><!-- .card-preview -->
+
+
+
+
+</div>
+
+
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- content @e -->
+
+
+
+
+
+
+
+
+
+</div><!-- .nk-fmg-body -->
+</div><!-- .nk-fmg -->
+</div>
+</div>
+</div>
+<!-- content @e -->
+
+
+
+{% endblock %}

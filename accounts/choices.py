@@ -1,6 +1,6 @@
 DEPARTMENT = (
         ('Monitoring', 'Monitoring'),
-        ('Registrations', 'Registrations'),
+        ('Registration', 'Registration'),
         ('Admin', 'Admin'),
         ('Procurement', 'Procurement'),
         ('Finance', 'Finance'),
@@ -8,6 +8,10 @@ DEPARTMENT = (
         ('ICT', 'ICT'),
         ('Stores', 'Stores'),
         ('Protocol', 'PR & Protocol'),
+        ('Planning', 'Planning'),
+        ('Legal', 'Legal'),
+        ('Servicom', 'Servicom'),
+        ('Institute', 'Institute'),
         ('Registrars Office', 'Registrars Office'),
         )
 

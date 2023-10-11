@@ -1,0 +1,20 @@
+{% extends "base_admin.html" %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<div class="row">
+    <h2>Create folder{% if parent %} in {{ parent.name }}{% endif %}</h2>
+
+    {% include "filemanager/filemanager_breadcrumbs.html" with member=parent %}
+
+    <form method="POST" action="{% url 'filemanager:folder_create' %}">
+        {% csrf_token %}
+        {{ form }}
+
+        <div class="form-actions">
+            <button>Create</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

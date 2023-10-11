@@ -4,6 +4,29 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+
+class FolderCreateForm(forms.ModelForm):
+
+    class Meta:
+        model = Folder
+        fields = ["name", "parent"]
+        widgets = {
+            "parent": forms.HiddenInput,
+        }
+
+    # def clean(self):
+    #     name = self.cleaned_data["name"]
+    #     parent = self.cleaned_data.get("parent")
+    #     if Folder.already_exists(name, parent):
+    #         raise forms.ValidationError(f"{name} already exists.")
+
+    def __init__(self, *args, **kwargs):
+        folders = kwargs.pop("folders")
+        super().__init__(*args, **kwargs)
+        self.fields["parent"].queryset = folders
+
+
+        
 class DirectoryCreateForm(forms.Form):
     directory_name = forms.CharField()
 

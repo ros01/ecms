@@ -208,7 +208,8 @@ def shared_files(request, directory=''):
         files = get_files_from_directory(selected_directory_path)
 
     breadcrumbs = get_breadcrumbs(request)
-    object_list = Document.objects.filter(share_with__in=User.objects.all())
+    users = User.objects.filter(email=request.user.email)
+    qs = Document.objects.filter(share_with__in = users)
 
     context = {
         'directories': directories, 
@@ -216,7 +217,7 @@ def shared_files(request, directory=''):
         'selected_directory': selected_directory,
         'segment': 'file_manager',
         'breadcrumbs': breadcrumbs,
-        'object_list': object_list,
+        'qs': qs,
     }
     return render(request, 'admin_dp/shared_files.html', context)
 
@@ -430,7 +431,7 @@ class DirectoryCreateView(FilemanagerMixin, FormView):
     }]
 
     def get_success_url(self):
-        url = '%s?path=%s' % (reverse('administration:directory_list'), self.fm.path)
+        url = '%s?path=%s' % (reverse('filemanager:browser'), self.fm.path)
         if hasattr(self, 'popup') and self.popup:
             url += '&popup=1'
         return url

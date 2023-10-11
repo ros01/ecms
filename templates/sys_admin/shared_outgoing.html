@@ -1,0 +1,384 @@
+{% extends 'base_admin.html'%}
+{% load static %}
+{% block title%}| System Administration {% endblock %}
+
+
+
+{% block content %} 
+
+
+<!-- content @s -->
+<div class="nk-content p-0">
+<div class="nk-content-inner">
+<div class="nk-content-body">
+<div class="nk-fmg">
+<div class="nk-fmg-aside" data-content="files-aside" data-toggle-overlay="true" data-toggle-body="true" data-toggle-screen="lg" data-simplebar>
+<div class="nk-fmg-aside-wrap">
+<div class="nk-fmg-aside-top">
+<ul class="nk-fmg-menu">
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'sys_admin:sys_admin_dashboard' %}">
+<em class="icon ni ni-home-alt"></em>
+<span class="nk-fmg-menu-text">Home</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+<!-- <a class="nk-fmg-menu-item" href="{% url 'admin_dp:files_all' %}"> -->
+<em class="icon ni ni-file-docs"></em>
+<span class="nk-fmg-menu-text">Files</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="#">
+<em class="icon ni ni-star"></em>
+<span class="nk-fmg-menu-text">Starred</span>
+</a>
+</li>
+<li class="active">
+<a class="nk-fmg-menu-item" href="{% url 'sys_admin:shared_files' %}">
+<em class="icon ni ni-share-alt"></em>
+<span class="nk-fmg-menu-text">Shared</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'sys_admin:recover_files' %}">
+<em class="icon ni ni-trash-alt"></em>
+<span class="nk-fmg-menu-text">Recovery</span>
+</a>
+</li>
+<li>
+<a class="nk-fmg-menu-item" href="{% url 'sys_admin:file_settings' %}">
+<em class="icon ni ni-setting-alt"></em>
+<span class="nk-fmg-menu-text">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="nk-fmg-aside-bottom">
+<div class="nk-fmg-status">
+<h6 class="nk-fmg-status-title"><em class="icon ni ni-hard-drive"></em><span>Storage</span></h6>
+<div class="progress progress-md bg-light">
+<div class="progress-bar" data-progress="5"></div>
+</div>
+<div class="nk-fmg-status-info">12.47 GB of 50 GB used</div>
+<div class="nk-fmg-status-action">
+<a href="#" class="link link-primary link-sm">Upgrade Storage</a>
+</div>
+</div>
+<div class="nk-fmg-switch">
+<div class="dropdown">
+<a href="#" data-toggle="dropdown" data-offset="-10, 12" class="dropdown-toggle dropdown-indicator-unfold">
+<div class="lead-text">Personal</div>
+<div class="sub-text">Only you</div>
+</a>
+<div class="dropdown-menu dropdown-menu-right">
+<ul class="link-list-opt no-bdr">
+<li><a href="#"><span>Team Folders</span></a></li>
+<li><a class="active" href="#"><span>Personal</span></a></li>
+<li class="divider"></li>
+<li><a class="link" href="#"><span>Update Folders</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><!-- .nk-fmg-aside -->
+<div class="nk-fmg-body">
+<div class="nk-fmg-body-head d-none d-lg-flex">
+<div class="nk-fmg-search">
+<em class="icon ni ni-search"></em>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search files, folders">
+</div>
+<div class="nk-fmg-actions">
+<ul class="nk-block-tools g-3">
+<li><a href="#" class="btn btn-round btn-light btn-icon"><em class="icon ni ni-setting"></em></a></li>
+</ul>
+</div>
+</div>
+<div class="nk-fmg-body-content">
+<div class="nk-block-head nk-block-head-md">
+<div class="nk-block-between position-relative">
+<div class="nk-block-head-content">
+<h3 class="nk-block-title page-title">Shared</h3>
+</div>
+<div class="nk-block-head-content">
+<ul class="nk-block-tools g-1">
+<li class="d-lg-none">
+<a href="#" class="btn btn-trigger btn-icon search-toggle toggle-search" data-target="search"><em class="icon ni ni-search"></em></a>
+</li>
+<li class="d-lg-none">
+<a href="#" class="btn btn-trigger btn-icon"><em class="icon ni ni-setting"></em></a>
+</li>
+<li class="d-lg-none mr-n1"><a href="#" class="btn btn-trigger btn-icon toggle" data-target="files-aside"><em class="icon ni ni-menu-alt-r"></em></a></li>
+</ul>
+</div>
+<div class="search-wrap px-2 d-lg-none" data-search="search">
+<div class="search-content">
+<a href="#" class="search-back btn btn-icon toggle-search" data-target="search"><em class="icon ni ni-arrow-left"></em></a>
+<input type="text" class="form-control border-transparent form-focus-none" placeholder="Search by user or message">
+<button class="search-submit btn btn-icon"><em class="icon ni ni-search"></em></button>
+</div>
+</div><!-- .search-wrap -->
+</div>
+</div><!-- .nk-block-head -->
+<ul class="nk-nav nav nav-tabs">
+<li class="nav-item">
+<a class="nav-link" href="{% url 'sys_admin:shared_files' %}">Incoming</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="{% url 'sys_admin:shared_outgoing' %}">Outgoing</a>
+</li>
+<!-- <li class="nav-item">
+<a class="nav-link" href="#">Links</a>
+</li> -->
+</ul><!-- .nk-nav -->
+<div class="nk-fmg-listing nk-block nk-block-xs">
+<div class="nk-files nk-files-view-list">
+<div class="nk-files-head">
+<div class="nk-file-item">
+<div class="nk-file-info">
+<div class="tb-head">Name</div>
+</div>
+<div class="nk-file-size">
+<div class="tb-head">Size</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-head">Shared On</div>
+</div>
+<div class="nk-file-actions">&nbsp;</div>
+</div>
+</div>
+<div class="nk-files-list">
+<div class="nk-file-item nk-file">
+<div class="nk-file-info">
+<a href="#" class="nk-file-link">
+    <div class="nk-file-title">
+        <div class="nk-file-icon">
+            <span class="nk-file-icon-type">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+                    <g>
+                        <rect x="32" y="16" width="28" height="15" rx="2.5" ry="2.5" style="fill:#6c87fe" />
+                        <path d="M59.7778,61H12.2222A6.4215,6.4215,0,0,1,6,54.3962V17.6038A6.4215,6.4215,0,0,1,12.2222,11H30.6977a4.6714,4.6714,0,0,1,4.1128,2.5644L38,24H59.7778A5.91,5.91,0,0,1,66,30V54.3962A6.4215,6.4215,0,0,1,59.7778,61Z" style="fill:#8aa3ff" />
+                        <path d="M7.7454,58.9807C9.9352,61.3864,12.4882,61.0163,14,61H59a6.3373,6.3373,0,0,0,5.2562-2.0193Z" style="fill:#798bff" />
+                        <path d="M29.6309,37.36a3.0236,3.0236,0,0,1-.86-2.39A4.3748,4.3748,0,0,1,32.9961,31h.0078a4.36,4.36,0,0,1,4.22,3.9121,3.0532,3.0532,0,0,1-.8545,2.4482A4.4158,4.4158,0,0,1,33.23,38.53c-.0771,0-.1533-.002-.23-.0049A4.519,4.519,0,0,1,29.6309,37.36Zm13.8359,2.7549a1,1,0,1,0-.9336,1.77c.7207.38,1.4658,2.126,1.4668,4.39V48a1,1,0,0,0,2,0V46.2744C45.999,43.3447,45.0049,40.9268,43.4668,40.1152ZM40.165,37.3965c-.1445.084-.29.168-.4316.2549a1,1,0,0,0,.5215,1.8535.9887.9887,0,0,0,.52-.1465c.1289-.0781.2607-.1543.3916-.23a4.2311,4.2311,0,0,0,2.1465-2.124.9839.9839,0,0,0,.0313-.1045A3.8411,3.8411,0,0,0,40.5,32.5352a1,1,0,0,0-.4922,1.9395,1.8773,1.8773,0,0,1,1.4,1.9092A2.835,2.835,0,0,1,40.165,37.3965ZM36.5,41h-7c-2.5234,0-4.5,2.7822-4.5,6.333V48.5a.8355.8355,0,0,0,.0588.2914.9731.9731,0,0,0,.3508.4946C26.4646,50.2812,29.4614,51,33,51s6.5353-.7187,7.59-1.7139a.9726.9726,0,0,0,.3509-.4949A.8361.8361,0,0,0,41,48.5V47.333C41,43.7822,39.0234,41,36.5,41Z" style="fill:#4b66bc" />
+                    </g>
+                </svg>
+            </span>
+        </div>
+        <div class="nk-file-name">
+            <div class="nk-file-name-text"><span class="title">Budget</span></div>
+        </div>
+    </div>
+</a>
+</div>
+<div class="nk-file-size">
+<div class="tb-lead">529.24 MB</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-lead">15/4/2019 5:29 PM</div>
+</div>
+<div class="nk-file-actions">
+<div class="dropdown">
+    <a href="" class="dropdown-toggle btn btn-sm btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <ul class="link-list-opt no-bdr">
+            <li><a href="#"><em class="icon ni ni-share"></em><span>Share</span></a></li>
+            <li><a href="#"><em class="icon ni ni-download"></em><span>Download</span></a></li>
+            <li><a class="link-danger" href="#"><em class="icon ni ni-cross-circle"></em><span>Shared Remove</span></a></li>
+        </ul>
+    </div>
+</div>
+</div>
+</div><!-- .nk-file -->
+<div class="nk-file-item nk-file">
+<div class="nk-file-info">
+<a href="#" class="nk-file-link">
+    <div class="nk-file-title">
+        <div class="nk-file-icon">
+            <span class="nk-file-icon-type">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+                    <g>
+                        <path d="M50,61H22a6,6,0,0,1-6-6V22l9-11H50a6,6,0,0,1,6,6V55A6,6,0,0,1,50,61Z" style="fill:#599def" />
+                        <path d="M25,20.556A1.444,1.444,0,0,1,23.556,22H16l9-11h0Z" style="fill:#c2e1ff" />
+                        <rect x="27" y="31" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                        <rect x="27" y="36" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                        <rect x="27" y="41" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                        <rect x="27" y="46" width="12" height="2" rx="1" ry="1" style="fill:#fff" />
+                    </g>
+                </svg>
+            </span>
+        </div>
+        <div class="nk-file-name">
+            <div class="nk-file-name-text"><span class="title">training-development.doc</span></div>
+        </div>
+    </div>
+</a>
+</div>
+<div class="nk-file-size">
+<div class="tb-lead">0.26 MB</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-lead">12/5/2018 12:46 AM</div>
+</div>
+<div class="nk-file-actions">
+<div class="dropdown">
+    <a href="" class="dropdown-toggle btn btn-sm btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <ul class="link-list-opt no-bdr">
+            <li><a href="#"><em class="icon ni ni-share"></em><span>Share</span></a></li>
+            <li><a href="#"><em class="icon ni ni-download"></em><span>Download</span></a></li>
+            <li><a class="link-danger" href="#"><em class="icon ni ni-cross-circle"></em><span>Shared Remove</span></a></li>
+        </ul>
+    </div>
+</div>
+</div>
+</div><!-- .nk-file -->
+<div class="nk-file-item nk-file">
+<div class="nk-file-info">
+<a href="#" class="nk-file-link">
+    <div class="nk-file-title">
+        <div class="nk-file-icon">
+            <span class="nk-file-icon-type">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+                    <g>
+                        <rect x="32" y="16" width="28" height="15" rx="2.5" ry="2.5" style="fill:#6c87fe" />
+                        <path d="M59.7778,61H12.2222A6.4215,6.4215,0,0,1,6,54.3962V17.6038A6.4215,6.4215,0,0,1,12.2222,11H30.6977a4.6714,4.6714,0,0,1,4.1128,2.5644L38,24H59.7778A5.91,5.91,0,0,1,66,30V54.3962A6.4215,6.4215,0,0,1,59.7778,61Z" style="fill:#8aa3ff" />
+                        <path d="M7.7454,58.9807C9.9352,61.3864,12.4882,61.0163,14,61H59a6.3373,6.3373,0,0,0,5.2562-2.0193Z" style="fill:#798bff" />
+                        <path d="M29.6309,37.36a3.0236,3.0236,0,0,1-.86-2.39A4.3748,4.3748,0,0,1,32.9961,31h.0078a4.36,4.36,0,0,1,4.22,3.9121,3.0532,3.0532,0,0,1-.8545,2.4482A4.4158,4.4158,0,0,1,33.23,38.53c-.0771,0-.1533-.002-.23-.0049A4.519,4.519,0,0,1,29.6309,37.36Zm13.8359,2.7549a1,1,0,1,0-.9336,1.77c.7207.38,1.4658,2.126,1.4668,4.39V48a1,1,0,0,0,2,0V46.2744C45.999,43.3447,45.0049,40.9268,43.4668,40.1152ZM40.165,37.3965c-.1445.084-.29.168-.4316.2549a1,1,0,0,0,.5215,1.8535.9887.9887,0,0,0,.52-.1465c.1289-.0781.2607-.1543.3916-.23a4.2311,4.2311,0,0,0,2.1465-2.124.9839.9839,0,0,0,.0313-.1045A3.8411,3.8411,0,0,0,40.5,32.5352a1,1,0,0,0-.4922,1.9395,1.8773,1.8773,0,0,1,1.4,1.9092A2.835,2.835,0,0,1,40.165,37.3965ZM36.5,41h-7c-2.5234,0-4.5,2.7822-4.5,6.333V48.5a.8355.8355,0,0,0,.0588.2914.9731.9731,0,0,0,.3508.4946C26.4646,50.2812,29.4614,51,33,51s6.5353-.7187,7.59-1.7139a.9726.9726,0,0,0,.3509-.4949A.8361.8361,0,0,0,41,48.5V47.333C41,43.7822,39.0234,41,36.5,41Z" style="fill:#4b66bc" />
+                    </g>
+                </svg>
+            </span>
+        </div>
+        <div class="nk-file-name">
+            <div class="nk-file-name-text"><span class="title">Conference Materials</span></div>
+        </div>
+    </div>
+</a>
+</div>
+<div class="nk-file-size">
+<div class="tb-lead">134.63 MB</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-lead">26/6/2018 3:28 PM</div>
+</div>
+<div class="nk-file-actions">
+<div class="dropdown">
+    <a href="" class="dropdown-toggle btn btn-sm btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <ul class="link-list-opt no-bdr">
+            <li><a href="#"><em class="icon ni ni-share"></em><span>Share</span></a></li>
+            <li><a href="#"><em class="icon ni ni-download"></em><span>Download</span></a></li>
+            <li><a class="link-danger" href="#"><em class="icon ni ni-cross-circle"></em><span>Shared Remove</span></a></li>
+        </ul>
+    </div>
+</div>
+</div>
+</div><!-- .nk-file -->
+<div class="nk-file-item nk-file">
+<div class="nk-file-info">
+<a href="#" class="nk-file-link">
+    <div class="nk-file-title">
+        <div class="nk-file-icon">
+            <span class="nk-file-icon-type">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+                    <path d="M50,61H22a6,6,0,0,1-6-6V22l9-11H50a6,6,0,0,1,6,6V55A6,6,0,0,1,50,61Z" style="fill:#36c684" />
+                    <path d="M25,20.556A1.444,1.444,0,0,1,23.556,22H16l9-11h0Z" style="fill:#95e5bd" />
+                    <path d="M42,31H30a3.0033,3.0033,0,0,0-3,3V45a3.0033,3.0033,0,0,0,3,3H42a3.0033,3.0033,0,0,0,3-3V34A3.0033,3.0033,0,0,0,42,31ZM29,38h6v3H29Zm8,0h6v3H37Zm6-4v2H37V33h5A1.001,1.001,0,0,1,43,34ZM30,33h5v3H29V34A1.001,1.001,0,0,1,30,33ZM29,45V43h6v3H30A1.001,1.001,0,0,1,29,45Zm13,1H37V43h6v2A1.001,1.001,0,0,1,42,46Z" style="fill:#fff" />
+                </svg>
+            </span>
+        </div>
+        <div class="nk-file-name">
+            <div class="nk-file-name-text"><span class="title">requistions-list.xlsx</span></div>
+        </div>
+    </div>
+</a>
+</div>
+<div class="nk-file-size">
+<div class="tb-lead">0.95 MB</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-lead">26/2/2018 8:35 PM</div>
+</div>
+<div class="nk-file-actions">
+<div class="dropdown">
+    <a href="" class="dropdown-toggle btn btn-sm btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <ul class="link-list-opt no-bdr">
+            <li><a href="#"><em class="icon ni ni-share"></em><span>Share</span></a></li>
+            <li><a href="#"><em class="icon ni ni-download"></em><span>Download</span></a></li>
+            <li><a class="link-danger" href="#"><em class="icon ni ni-cross-circle"></em><span>Shared Remove</span></a></li>
+        </ul>
+    </div>
+</div>
+</div>
+</div><!-- .nk-file -->
+<div class="nk-file-item nk-file">
+<div class="nk-file-info">
+<a href="#" class="nk-file-link">
+    <div class="nk-file-title">
+        <div class="nk-file-icon">
+            <span class="nk-file-icon-type">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+                    <path d="M50,61H22a6,6,0,0,1-6-6V22l9-11H50a6,6,0,0,1,6,6V55A6,6,0,0,1,50,61Z" style="fill:#7e95c4" />
+                    <path d="M25,20.556A1.444,1.444,0,0,1,23.556,22H16l9-11h0Z" style="fill:#b7ccea" />
+                    <rect x="27" y="31" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                    <rect x="27" y="35" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                    <rect x="27" y="39" width="18" height="2" rx="1" ry="1" style="fill:#fff" />
+                    <rect x="27" y="43" width="14" height="2" rx="1" ry="1" style="fill:#fff" />
+                    <rect x="27" y="47" width="8" height="2" rx="1" ry="1" style="fill:#fff" />
+                </svg>
+            </span>
+        </div>
+        <div class="nk-file-name">
+            <div class="nk-file-name-text"><span class="title">work-to-do.txt</span></div>
+        </div>
+    </div>
+</a>
+</div>
+<div class="nk-file-size">
+<div class="tb-lead">345 KB</div>
+</div>
+<div class="nk-file-date">
+<div class="tb-lead">9/2/2017 10:05 AM</div>
+</div>
+<div class="nk-file-actions">
+<div class="dropdown">
+    <a href="" class="dropdown-toggle btn btn-sm btn-icon btn-trigger" data-toggle="dropdown"><em class="icon ni ni-more-h"></em></a>
+    <div class="dropdown-menu dropdown-menu-right">
+        <ul class="link-list-opt no-bdr">
+            <li><a href="#"><em class="icon ni ni-share"></em><span>Share</span></a></li>
+            <li><a href="#"><em class="icon ni ni-download"></em><span>Download</span></a></li>
+            <li><a class="link-danger" href="#"><em class="icon ni ni-cross-circle"></em><span>Shared Remove</span></a></li>
+        </ul>
+    </div>
+</div>
+</div>
+</div><!-- .nk-file -->
+</div>
+</div><!-- .nk-files -->
+</div><!-- .nk-block -->
+</div><!-- .nk-fmg-body-content -->
+</div><!-- .nk-fmg-body -->
+</div><!-- .nk-fmg -->
+</div>
+</div>
+</div>
+<!-- content @e -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
