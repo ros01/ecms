@@ -152,14 +152,14 @@ class StaffComments(models.Model):
 
 class Document(models.Model):
     filename = models.CharField(max_length=255)
-    folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
+    # folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
     path = models.URLField()
     encoded_path = models.FileField()
     author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='authors', on_delete=models.CASCADE)
     created = models.DateTimeField(default=timezone.now)
     modified = models.DateTimeField(default=timezone.now)
     share_with = models.ManyToManyField(User, related_name='shared_users')
-    staff_comments = models.ManyToManyField(StaffComments, related_name='staff_comments')
+    staff_comments = models.ManyToManyField(StaffComments)
     remarks = models.CharField(max_length=255, null=True, blank=True)
     
 
@@ -175,14 +175,14 @@ class Document(models.Model):
     # def get_absolute_url(self):
     #     return reverse("filemanager:document_detail", args=[self.pk])
 
-    def shared_queryset(self):
+    # def shared_queryset(self):
         """
         Returns queryset of this folder mapped into the shared user model.
         The queryset should only consist of zero or one instances (aka shared
         or not shared.) This method is mostly used for convenience.
         """
-        model = self.shared_user_model()
-        return model._default_manager.filter(**{model.obj_attr: self})
+        # model = self.shared_user_model()
+        # return model._default_manager.filter(**{model.obj_attr: self})
 
     
     # def shared_with(self, user=None):

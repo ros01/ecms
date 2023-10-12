@@ -545,11 +545,12 @@ def add_comment(request, file_path):
     if request.method == 'POST':
         comments_list = StaffComments.objects.create(
             author=author,
-            comments=request.POST.get('comments'),
-            status = 2,  
+            comments=request.POST.get('comments'), 
+            status = 2,
         )
+        
 
-        document = Document.objects.get(encoded_path = encoded_path)
+        document = Document.objects.filter(encoded_path = encoded_path)[0]
         document.staff_comments.add(comments_list)
         print("Comment:", comments_list)
         messages.success(request, ('Comment added successfully'))
@@ -559,7 +560,8 @@ def add_comment(request, file_path):
 
 
 def file_detail(request, file_path):
-    document = get_object_or_404(Document, encoded_path = file_path)
+    # document = get_object_or_404(Document, encoded_path = file_path)
+    document = Document.objects.filter(encoded_path = file_path)[0]
     context = {
         'document': document, 
     }
