@@ -14,11 +14,11 @@ class FolderCreateForm(forms.ModelForm):
             "parent": forms.HiddenInput,
         }
 
-    # def clean(self):
-    #     name = self.cleaned_data["name"]
-    #     parent = self.cleaned_data.get("parent")
-    #     if Folder.already_exists(name, parent):
-    #         raise forms.ValidationError(f"{name} already exists.")
+    def clean(self):
+        name = self.cleaned_data["name"]
+        parent = self.cleaned_data.get("parent")
+        if Folder.already_exists(name, parent):
+            raise forms.ValidationError(f"{name} already exists.")
 
     def __init__(self, *args, **kwargs):
         folders = kwargs.pop("folders")
@@ -26,7 +26,36 @@ class FolderCreateForm(forms.ModelForm):
         self.fields["parent"].queryset = folders
 
 
-        
+class FileDetailCreateForm(forms.ModelForm):
+
+    class Meta:
+        model = FileDetail
+        fields = ["folder", "file"]
+        widgets = {
+            "folder": forms.HiddenInput,
+        }
+
+    def __init__(self, *args, **kwargs):
+        folders = kwargs.pop("folders")
+        # self.storage = kwargs.pop("storage")
+        super().__init__(*args, **kwargs)
+        self.fields["folder"].queryset = folders
+
+    # def clean_file(self):
+    #     value = self.cleaned_data["file"]
+    #     if (value.size + self.storage.bytes_used) > self.storage.bytes_total:
+    #         raise forms.ValidationError("File will exceed storage capacity.")
+    #     return value
+
+    def clean(self):
+        if "file" in self.cleaned_data:
+            name = self.cleaned_data.get("file").name
+            folder = self.cleaned_data.get("folder")
+            if FileDetail.already_exists(name, folder):
+                raise forms.ValidationError(
+                    hookset.already_exists_validation_message(name, folder)
+                )
+                       
 class DirectoryCreateForm(forms.Form):
     directory_name = forms.CharField()
 

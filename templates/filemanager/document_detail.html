@@ -39,38 +39,38 @@
 <div class="nk-fmg-aside-wrap">
 <div class="nk-fmg-aside-top">
 <ul class="nk-fmg-menu">
-<li class="active">
+<!-- <li class="active">
 <a class="nk-fmg-menu-item" href="{% url 'admin_dp:admin_dashboard' %}">
 <em class="icon ni ni-home-alt"></em>
 <span class="nk-fmg-menu-text">Home</span>
 </a>
-</li>
-<li>
-<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_manager' %}">
+</li> -->
+<li class="active">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:folder_list' %}">
 <em class="icon ni ni-file-docs"></em>
 <span class="nk-fmg-menu-text">Files</span>
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="{% url 'admin_dp:starred_files' %}">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:starred_files' %}">
 <em class="icon ni ni-star"></em>
 <span class="nk-fmg-menu-text">Starred</span>
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="{% url 'admin_dp:shared_files' %}">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:shared_files' %}">
 <em class="icon ni ni-share-alt"></em>
 <span class="nk-fmg-menu-text">Shared</span>
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="{% url 'admin_dp:recover_files' %}">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:recover_files' %}">
 <em class="icon ni ni-trash-alt"></em>
 <span class="nk-fmg-menu-text">Recovery</span>
 </a>
 </li>
 <li>
-<a class="nk-fmg-menu-item" href="{% url 'admin_dp:file_settings' %}">
+<a class="nk-fmg-menu-item" href="{% url 'filemanager:file_settings' %}">
 <em class="icon ni ni-setting-alt"></em>
 <span class="nk-fmg-menu-text">Settings</span>
 </a>
@@ -154,7 +154,7 @@
 <div class="nk-block-head nk-block-head-sm">
 <div class="nk-block-between position-relative">
 <div class="nk-block-head-content">
-<h6 class="nk-block-title page-title"><a href="{% url 'filemanager:file_manager' %}">Admin DP Documents Home</a></h6>
+<h6 class="nk-block-title page-title"><a href="{% url 'filemanager:folder_list' %}">My Folders Home</a></h6>
 </div>
 <div class="nk-block-head-content">
 <ul class="nk-block-tools g-1">
@@ -268,7 +268,12 @@
 <div class="nk-block-head nk-block-head-sm">
 <div class="nk-block-between g-3">
 <div class="nk-block-head-content">
-<h3 class="nk-block-title page-title"> <strong class="text-success small">{{ document.filename}}</strong></h3>
+<h3 class="nk-block-title page-title"> <strong class="text-success small">{{ document.filename}}<span data-bs-toggle="modal" data-bs-target="#file-{{forloop.counter}}">
+<i title="View" class="fa-solid fa-eye text-primary"></i>
+</span></strong></h3>
+
+
+
 <!-- <div class="nk-block-des text-soft">
     <ul class="list-inline">
         <li>Application ID: <span class="text-base">KID000844</span></li>
@@ -276,6 +281,46 @@
     </ul>
 </div> -->
 </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="file-{{forloop.counter}}" data-bs-backdrop="static" data-bs-keyboard="false"
+tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered modal-xl">
+<div class="modal-content">
+<div class="modal-header">
+<h1 class="modal-title fs-5" id="staticBackdropLabel">{{ document.filename }}</h1>
+<span>
+
+{% if document %}
+<a href="{% url 'filemanager:download_file' document.filename|encoded_file_path %}">
+<i title="Download" class="fa-solid fa-download text-success fs-4"></i>
+</a>
+
+{% endif %}
+</span>
+<div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
+<i class="fa-solid fa-circle-xmark fs-5"></i>
+</div>
+</div>
+<div class="modal-body">
+{% if document.filename|file_extension in ".jpg, .png, .gif" %}
+<img height="700px" class="w-100" src="/media/{{ document.file }}" alt="df">
+{% elif document.filename|file_extension in ".mp4, .webm, .ogg" %}
+<video class="w-100" height="700" controls>
+<source src="/media/{{ document.file }}" type="video/mp4">
+</video>
+{% elif document.filename|file_extension in ".pdf, .txt" %}
+<iframe src="/media/{{ document.filename }}" width="100%" height="700px"></iframe>
+{% elif document.filename|file_extension in ".csv" %}
+<pre class="bg-dark text-light p-3">{{ document.csv_text }}</pre>
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+
+
 <div class="nk-block-head-content">
 <a href="{{request.META.HTTP_REFERER}}"  class="btn btn-outline-light bg-white d-none d-sm-inline-flex"><em class="icon ni ni-arrow-left"></em><span>Back</span></a>
 

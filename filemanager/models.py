@@ -15,6 +15,8 @@ from django.apps import apps
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.db.models.signals import pre_save, post_save, m2m_changed
+from django.utils.text import slugify
 # Create your models here.
 
 class FileInfo(models.Model):
@@ -79,10 +81,10 @@ class SharedMemberQuerySet(QuerySet):
 
 
 class Folder(models.Model):
-
     name = models.CharField(max_length=140)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.CASCADE)
+    slug   = models.SlugField(blank=True)
     created = models.DateTimeField(default=timezone.now)
     modified = models.DateTimeField(default=timezone.now)
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.CASCADE, null=True)
@@ -106,13 +108,14 @@ class Folder(models.Model):
 
     def save(self, **kwargs):
         if not self.pk and Folder.already_exists(self.name, self.parent):
-            raise DuplicateFolderNameError(f"{self.name} already exists in this folder.")
+            raise DuplicateFolderNameError(f"{self.name} folder already exists.")
         self.touch(self.author, commit=False)
         super().save(**kwargs)
 
-
+    
     def get_absolute_url(self):
-        return reverse("filemanager:folder_detail", args=[self.pk])
+        # return reverse("filemanager:folder_list")
+        return reverse("filemanager:folder_detail", kwargs={"slug": self.slug})
 
     def unique_id(self):
         return "f-%d" % self.id
@@ -133,6 +136,134 @@ class Folder(models.Model):
     def already_exists(cls, name, folder=None):
         return cls.objects.filter(name=name, folder=folder).exists()
 
+def pre_save_folder_receiver(sender, instance, *args, **kwargs):
+    if not instance.slug:
+        instance.slug = slugify(instance.name)
+
+pre_save.connect(pre_save_folder_receiver, sender=Folder)
+
+
+class FileDetail(models.Model):
+    name = models.URLField()
+    # path = models.URLField()
+    # encoded_path = models.FileField()
+    folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.CASCADE)
+    created = models.DateTimeField(default=timezone.now)
+    modified = models.DateTimeField(default=timezone.now)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.CASCADE)
+    # file = models.FileField(upload_to=uuid_filename)
+    file = models.FileField(upload_to='%Y/%m/%d/', blank=True, null=True)
+    
+    # original_filename = models.CharField(max_length=500)
+
+    # objects = DocumentQuerySet.as_manager()
+
+    kind = "document"
+    icon = "file"
+    shared = None
+
+    def delete(self, *args, **kwargs):
+        bytes_to_free = self.size
+        super().delete(*args, **kwargs)
+        storage_qs = UserStorage.objects.filter(pk=self.author.storage.pk)
+        storage_qs.update(bytes_used=F("bytes_used") - bytes_to_free)
+
+    @classmethod
+    def shared_user_model(cls):
+        return DocumentSharedUser
+
+    @classmethod
+    def already_exists(cls, name, folder=None):
+        return cls.objects.filter(name=name, folder=folder).exists()
+
+    def __str__(self):
+        return self.name
+
+    def save(self, **kwargs):
+        if not self.pk and FileDetail.already_exists(self.name, self.folder):
+            raise DuplicateDocumentNameError(f"{self.name} already exists in this folder.")
+        self.touch(self.author, commit=False)
+        super().save(**kwargs)
+
+    def get_absolute_url(self):
+        return reverse("filemanager:file_detail", args=[self.pk])
+
+    def unique_id(self):
+        return "d-%d" % self.id
+
+    def touch(self, user, commit=True):
+        self.modified = timezone.now()
+        self.modified_by = user
+        if commit:
+            if self.folder:
+                self.folder.touch(user)
+            self.save()
+
+    @property
+    def size(self):
+        return self.file.size
+
+    def breadcrumbs(self):
+        crumbs = []
+        if self.folder:
+            crumbs.extend(self.folder.breadcrumbs())
+            crumbs.append(self.folder)
+        return crumbs
+
+    def shared_queryset(self):
+        """
+        Returns queryset of this folder mapped into the shared user model.
+        The queryset should only consist of zero or one instances (aka shared
+        or not shared.) This method is mostly used for convenience.
+        """
+        model = self.shared_user_model()
+        return model._default_manager.filter(**{model.obj_attr: self})
+
+    @property
+    def shared(self):
+        """
+        Determines if self is shared. This checks the denormalization and
+        does not return whether self SHOULD be shared (based on parents.)
+        """
+        return self.shared_queryset().exists()
+
+    def shared_ui(self):
+        return False
+
+    def shared_with(self, user=None):
+        """
+        Returns a User queryset of users shared on this folder, or, if user
+        is given optimizes the check and returns boolean.
+        """
+        User = get_user_model()
+        qs = self.shared_queryset()
+        if user is not None:
+            return qs.filter(user=user).exists()
+        if not qs.exists():
+            return User.objects.none()
+        return User.objects.filter(pk__in=qs.values("user"))
+
+    def share(self, users):
+        users = [u for u in users if not self.shared_with(user=u)]
+        if users:
+            model = self.shared_user_model()
+            objs = []
+            for user in users:
+                objs.append(self.shared_user_model()(**{model.obj_attr: self, "user": user}))
+            model._default_manager.bulk_create(objs)
+
+    def download_url(self):
+        return reverse(
+            "filemanager:download_file",
+            args=[self.pk]
+        )
+
+    def delete_url(self):
+        return reverse(
+            "filemanager:delete_file",
+            args=[self.pk]
+        )
 
 
 class StaffComments(models.Model):

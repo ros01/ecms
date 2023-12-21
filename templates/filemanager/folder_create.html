@@ -3,17 +3,20 @@
 
 
 {% block content %}
-<div class="row">
-    <h2>Create folder{% if parent %} in {{ parent.name }}{% endif %}</h2>
+<div class="row pt-4 pb-2 px-4">
+    <h4 class="text-primary">Create folder{% if parent %} in {{ parent.name }}{% endif %}</h4>
 
     {% include "filemanager/filemanager_breadcrumbs.html" with member=parent %}
+</div>
+
+<div class="container-fluid">
 
     <form method="POST" action="{% url 'filemanager:folder_create' %}">
         {% csrf_token %}
         {{ form }}
 
         <div class="form-actions">
-            <button>Create</button>
+        <button class="btn btn-success"> Create Folder</button>
         </div>
     </form>
 </div>

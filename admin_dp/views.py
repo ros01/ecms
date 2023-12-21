@@ -135,6 +135,34 @@ class StarredFiles(TemplateView):
         context = super(StarredFiles, self).get_context_data(*args, **kwargs)
         return context
 
+def share_file(request, file_path):
+    form = FolderShareForm
+    path = file_path.replace('%slash%', '/')
+    absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
+    file_path = absolute_file_path
+    filename = request.FILES.get('file')
+    author = request.user
+
+    if request.method == 'POST':
+        shared_users=request.POST.get('share_with')
+        print("User1:", shared_users)
+        staff_user= User.objects.filter(id__in=shared_users)
+        print("User:", staff_user)
+        instance = Document.objects.create(
+            path=request.POST.get('path'),
+            encoded_path=request.POST.get('encoded_path'),
+            filename=request.POST.get('filename'),
+            author=author,
+            remarks=request.POST.get('remarks'),
+            # shared_with=staff_user,
+        )
+        # for user in shared_users:
+        #     instance.staff_user.add(user)
+        instance.share_with.set(staff_user)
+        messages.success(request, ('Document Share Successful'))
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
 
 
 def convert_csv_to_text(csv_file_path):

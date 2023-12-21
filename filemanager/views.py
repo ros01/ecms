@@ -1,6 +1,7 @@
 import json
 import os
 from django.conf import settings
+from django.db import transaction
 import uuid
 import csv
 from django.utils.decorators import method_decorator
@@ -17,6 +18,7 @@ from filemanager.forms import DirectoryCreateForm, RenameForm
 from filemanager.core import Filemanager
 import re
 from django.contrib import messages 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import (
     CreateView,
@@ -63,6 +65,9 @@ class FolderCreate(CreateView):
         # folder.share(folder.shared_parent().shared_with())
         return folder
 
+    def get_success_url(self):
+        return reverse("filemanager:folder_list")
+
     def form_valid(self, form):
         kwargs = {
             "name": form.cleaned_data["name"],
@@ -72,18 +77,6 @@ class FolderCreate(CreateView):
         self.object = self.create_folder(**kwargs)
         # hookset.folder_created_message(self.request, self.object)
         return HttpResponseRedirect(self.get_success_url())
-
-
-class FolderList(ListView):
-    template_name = "filemanager/folder_list.html"
-    def get_queryset(self):
-        request = self.request
-        qs = Folder.objects.filter(author=request.user)
-        query = request.GET.get('q')
-        if query:
-            qs = qs.filter(name__icontains=query)
-        return qs
-
 
 
 class FilemanagerMixin(object):
@@ -219,7 +212,7 @@ class UploadFileView(FilemanagerMixin, View):
             return HttpResponseBadRequest("Just a single file please.")
 
         # TODO: get filepath and validate characters in name, validate mime type and extension
-        filename = self.fm.upload_file(filedata = request.FILES['files[]'])
+        filename = self.fm.upload_file(filedata = request.FILES)
 
         return HttpResponse(json.dumps({
             'files': [{'name': filename}],
@@ -348,6 +341,33 @@ def get_breadcrumbs(request):
     return breadcrumbs
 
 
+def generate_nested_directory(root_path, current_path):
+    directories = []
+    for name in os.listdir(current_path):
+        if os.path.isdir(os.path.join(current_path, name)):
+            unique_id = str(uuid.uuid4())
+            nested_path = os.path.join(current_path, name)
+            nested_directories = generate_nested_directory(root_path, nested_path)
+            directories.append({'id': unique_id, 'name': name, 'path': os.path.relpath(nested_path, root_path), 'directories': nested_directories})
+    return directories
+
+
+def save_info(request, file_path):
+    path = file_path.replace('%slash%', '/')
+    if request.method == 'POST':
+        FileInfo.objects.update_or_create(
+            path=path,
+            defaults={
+                'info': request.POST.get('info')
+            }
+        )
+    
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+
+
 def file_manager(request, directory=''):
     form = DocumentShareForm
     media_path = os.path.join(settings.MEDIA_ROOT)
@@ -449,8 +469,156 @@ class FolderDetail(DetailView):
             'staff_comment': staff_comment,
             # "can_share": self.object.can_share(self.request.user),
         }
+
+        context.update(ctx)
+        # print ("Context:", context)
+        return context
+
+
+class FolderList(ListView):
+    template_name = "filemanager/folder_list.html"
+    def get_queryset(self):
+        request = self.request
+        qs = Folder.objects.filter(author=request.user)
+        # query = request.GET.get('q')
+        # if query:
+        #     qs = qs.filter(name__icontains=query)
+        return qs
+
+
+    def get_files_from_directory(directory_path):
+        files = []
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
+            if os.path.isfile(file_path):
+                try:
+                    print( ' > file_path ' + file_path)
+                    _, extension = os.path.splitext(filename)
+                    if extension.lower() == '.csv':
+                        csv_text = convert_csv_to_text(file_path)
+                    else:
+                        csv_text = ''
+
+                    files.append({
+                        'file': file_path.split(os.sep + 'media' + os.sep)[1],
+                        'filename': filename,
+                        'file_path': file_path,
+                        'csv_text': csv_text
+                    })
+                except Exception as e:
+                    print( ' > ' +  str( e ) )    
+        return files
+
+    def generate_nested_directory(root_path, current_path):
+        directories = []
+        for name in os.listdir(current_path):
+            if os.path.isdir(os.path.join(current_path, name)):
+                unique_id = str(uuid.uuid4())
+                nested_path = os.path.join(current_path, name)
+                nested_directories = generate_nested_directory(root_path, nested_path)
+                directories.append({'id': unique_id, 'name': name, 'path': os.path.relpath(nested_path, root_path), 'directories': nested_directories})
+        return directories
+
+    # def get_queryset(self):
+    #     qs = super().get_queryset()
+    #     qs = qs.for_user(self.request.user)
+    #     return qs
+
+    def get_context_data(self, directory='', **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = DocumentShareForm
+        media_path = os.path.join(settings.MEDIA_ROOT)
+        directories = generate_nested_directory(media_path, media_path)
+        selected_directory = directory
+
+        files = []
+        selected_directory_path = os.path.join(media_path, selected_directory)
+        if os.path.isdir(selected_directory_path):
+            files = get_files_from_directory(selected_directory_path)
+
+        breadcrumbs = get_breadcrumbs(self.request)
+        # document_filepath = media_path
+        staff_comment = StaffComments.objects.filter(status=2)
+        ctx = {
+            # 'members': self.object.members(user=self.request.user),
+            'directories': directories, 
+            'files': files, 
+            'selected_directory': selected_directory,
+            'segment': 'file_manager',
+            'breadcrumbs': breadcrumbs,
+            'form': form,
+            # 'document': document,
+            'staff_comment': staff_comment,
+            # "can_share": self.object.can_share(self.request.user),
+        }
         context.update(ctx)
         return context
+
+class FileCreateView(LoginRequiredMixin, CreateView):
+    model = FileDetail
+    form_class = FileDetailCreateForm
+    template_name = "filemanager/file_create.html"
+    folder = None
+
+    def get(self, request, *args, **kwargs):
+        if "f" in request.GET:
+            qs = Folder.objects.for_user(request.user)
+            self.folder = get_object_or_404(qs, pk=request.GET["f"])
+        else:
+            self.folder = None
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs.setdefault("folder", self.folder)
+        return super().get_context_data(**kwargs)
+
+    def get_initial(self):
+        if self.folder:
+            self.initial["folder"] = self.folder
+        return super().get_initial()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"folders": Folder.objects.for_user(self.request.user)})
+        return kwargs
+
+    def create_document(self, **kwargs):
+        document = self.model.objects.create(**kwargs)
+        document.touch(self.request.user)
+        if document.folder is not None:
+            # if folder is not amongst anything shared it will share with no
+            # users which share will no-op; perhaps not the best way?
+            document.share(document.folder.shared_parent().shared_with())
+        return document
+
+    def increase_usage(self, bytes):
+        # increase usage for this user based on document size
+        storage_qs = UserStorage.objects.filter(pk=self.request.user.storage.pk)
+        storage_qs.update(bytes_used=F("bytes_used") + bytes)
+
+    def get_create_kwargs(self, form):
+        return {
+            "name": form.cleaned_data["file"].name,
+            # "original_filename": form.cleaned_data["file"].name,
+            "folder": form.cleaned_data["folder"],
+            "author": self.request.user,
+            "file": form.cleaned_data["file"],
+        }
+
+
+    def get_success_url(self):
+        return reverse("filemanager:folder_list")
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            kwargs = self.get_create_kwargs(form)
+            # self.object = self.create_file(**kwargs)
+            # hookset.document_created_message(self.request, self.object)
+            # bytes = form.cleaned_data["file"].size
+            # self.increase_usage(bytes)
+            return HttpResponseRedirect(self.get_success_url())
+
+
 
 def files_manager(request, directory=''):
     media_path = os.path.join(settings.MEDIA_ROOT)
@@ -475,30 +643,33 @@ def files_manager(request, directory=''):
     return render(request, 'partials/folder_docs.html', context)
 
 
-
-
-def generate_nested_directory(root_path, current_path):
-    directories = []
-    for name in os.listdir(current_path):
-        if os.path.isdir(os.path.join(current_path, name)):
-            unique_id = str(uuid.uuid4())
-            nested_path = os.path.join(current_path, name)
-            nested_directories = generate_nested_directory(root_path, nested_path)
-            directories.append({'id': unique_id, 'name': name, 'path': os.path.relpath(nested_path, root_path), 'directories': nested_directories})
-    return directories
-
-
-def save_info(request, file_path):
+def download_file(request, file_path):
     path = file_path.replace('%slash%', '/')
-    if request.method == 'POST':
-        FileInfo.objects.update_or_create(
-            path=path,
-            defaults={
-                'info': request.POST.get('info')
-            }
-        )
+    absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(absolute_file_path):
+        with open(absolute_file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(absolute_file_path)
+            return response
+    raise Http404
+
+
+def file_detail(request, file_path):
+    # document = get_object_or_404(Document, encoded_path = file_path)
+    path = file_path.replace('%slash%', '/')
+    absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
+    # file_path = absolute_file_path
+    document = Document.objects.filter(encoded_path = file_path).first()
+
+    print("Hi:", document)
+    context = {
+        'document': document, 
+        'encoded_path': absolute_file_path,
+    }
+
     
-    return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'filemanager/document_detail.html', context)
+
 
 
 
@@ -559,13 +730,33 @@ def add_comment(request, file_path):
 
 
 
-def file_detail(request, file_path):
-    # document = get_object_or_404(Document, encoded_path = file_path)
-    document = Document.objects.filter(encoded_path = file_path)[0]
+def shared_files(request, directory=''):
+    media_path = os.path.join(settings.MEDIA_ROOT)
+    directories = generate_nested_directory(media_path, media_path)
+    selected_directory = directory
+
+    files = []
+    selected_directory_path = os.path.join(media_path, selected_directory)
+    if os.path.isdir(selected_directory_path):
+        files = get_files_from_directory(selected_directory_path)
+
+    breadcrumbs = get_breadcrumbs(request)
+    users = User.objects.filter(email=request.user.email)
+    qs = Document.objects.filter(share_with__in = users)
+
     context = {
-        'document': document, 
+        'directories': directories, 
+        'files': files, 
+        'selected_directory': selected_directory,
+        'segment': 'file_manager',
+        'breadcrumbs': breadcrumbs,
+        'qs': qs,
     }
-    return render(request, 'filemanager/document_detail.html', context)
+    return render(request, 'filemanager/shared_files.html', context)
+
+
+
+
         
 
 
@@ -604,26 +795,129 @@ def delete_file(request, file_path):
     return redirect(request.META.get('HTTP_REFERER'))
 
     
-def download_file(request, file_path):
-    path = file_path.replace('%slash%', '/')
-    absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
-    if os.path.exists(absolute_file_path):
-        with open(absolute_file_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(absolute_file_path)
-            return response
-    raise Http404
+
 
 def upload_file(request):
     media_path = os.path.join(settings.MEDIA_ROOT)
     selected_directory = request.POST.get('directory', '') 
     selected_directory_path = os.path.join(media_path, selected_directory)
+
     if request.method == 'POST':
         file = request.FILES.get('file')
         file_path = os.path.join(selected_directory_path, file.name)
         with open(file_path, 'wb') as destination:
             for chunk in file.chunks():
                 destination.write(chunk)
-
+    print("File Path:", file_path)
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+class SharedFiles(ListView):
+    template_name = "filemanager/shared_files.html"
+    def get_queryset(self):
+        request = self.request
+        # qs = User.objects.filter(document__in=Document.objects.all())
+        qs = Document.objects.filter(share_with__in=User.objects.all())
+        query = request.GET.get('q')
+        if query:
+            qs = qs.filter(name__icontains=query)
+        return qs
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(SharedFiles, self).get_context_data(*args, **kwargs)
+
+        media_path = os.path.join(settings.MEDIA_ROOT)
+        directories = generate_nested_directory(media_path, media_path)
+        selected_directory = directory
+        files = []
+        selected_directory_path = os.path.join(media_path, selected_directory)
+        if os.path.isdir(selected_directory_path):
+            files = get_files_from_directory(selected_directory_path)
+            breadcrumbs = get_breadcrumbs(self.request)
+
+        # context['directories'] = directories  
+        context['files'] = files
+        context['selected_directory'] = selected_directory
+        context['segment'] = segment
+        context['breadcrumbs'] = breadcrumbs
+        return context
+
+
+class ViewProfile(TemplateView):
+    template_name = "filemanager/viewprofile.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(ViewProfile, self).get_context_data(*args, **kwargs)
+        return context
+
+class AllFiles(TemplateView):
+    template_name = "filemanager/admin_files.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(AllFiles, self).get_context_data(*args, **kwargs)
+        return context
+
+class FilesGroup(TemplateView):
+    template_name = "filemanager/files_group_view.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(FilesGroup, self).get_context_data(*args, **kwargs)
+        return context
+
+class FilesList(TemplateView):
+    template_name = "filemanager/files_list_view.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(FilesList, self).get_context_data(*args, **kwargs)
+        return context
+       
+class StarredFiles(TemplateView):
+    template_name = "filemanager/starred_files.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(StarredFiles, self).get_context_data(*args, **kwargs)
+        return context
+
+
+class SharedOutgoing(TemplateView):
+    template_name = "filemanager/shared_outgoing.html"
+
+    
+    def get_context_data(self, *args, **kwargs):
+        context = super(SharedOutgoing, self).get_context_data(*args, **kwargs)
+
+
+class SharedLinks(TemplateView):
+    template_name = "filemanager/shared_links.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(SharedLinks, self).get_context_data(*args, **kwargs)
+
+class RecoverFiles(TemplateView):
+    template_name = "filemanager/recovery.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(RecoverFiles, self).get_context_data(*args, **kwargs)
+
+
+
+class FileSettings(TemplateView):
+    template_name = "filemanager/setting.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(FileSettings, self).get_context_data(*args, **kwargs)
+
+
+
+class MailBox(TemplateView):
+    template_name = "filemanager/mailbox.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(MailBox, self).get_context_data(*args, **kwargs)
+
 
