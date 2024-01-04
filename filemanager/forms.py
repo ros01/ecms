@@ -26,20 +26,20 @@ class FolderCreateForm(forms.ModelForm):
         self.fields["parent"].queryset = folders
 
 
-class FileDetailCreateForm(forms.ModelForm):
+class DocumentCreateForm(forms.ModelForm):
 
     class Meta:
-        model = FileDetail
-        fields = ["folder", "file"]
+        model = Document
+        fields = ["file", "folder"]
         widgets = {
             "folder": forms.HiddenInput,
         }
 
     def __init__(self, *args, **kwargs):
-        folders = kwargs.pop("folders")
+        # folders = kwargs.pop("folders")
         # self.storage = kwargs.pop("storage")
         super().__init__(*args, **kwargs)
-        self.fields["folder"].queryset = folders
+        # self.fields["folder"].queryset = folders
 
     # def clean_file(self):
     #     value = self.cleaned_data["file"]
@@ -51,7 +51,7 @@ class FileDetailCreateForm(forms.ModelForm):
         if "file" in self.cleaned_data:
             name = self.cleaned_data.get("file").name
             folder = self.cleaned_data.get("folder")
-            if FileDetail.already_exists(name, folder):
+            if Document.already_exists(name, folder):
                 raise forms.ValidationError(
                     hookset.already_exists_validation_message(name, folder)
                 )
@@ -97,8 +97,8 @@ class DocumentShareForm(forms.ModelForm):
     )
 
     class Meta:
-         model = Document
-         fields = ('filename', 'path', 'encoded_path', 'author', 'share_with', 'remarks')  
+         model = SharedDocument
+         fields = ('filename', 'shared_by', 'share_with', 'remarks')  
 
     def __init__(self, *args, **kwargs):
        super(DocumentShareForm, self).__init__(*args, **kwargs)

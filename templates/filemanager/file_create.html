@@ -14,7 +14,7 @@
 
     {% include "pinax/documents/_breadcrumbs.html" with member=folder %}
 
-    <form method="POST" action="{% url 'filemanager:file_create' %}" enctype="multipart/form-data">
+    <form method="POST" action="{% url 'filemanager:document_create' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {% for hidden_field in form.hidden_fields %}
             {{ hidden_field.errors }}

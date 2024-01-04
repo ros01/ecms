@@ -292,12 +292,12 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ document.filename }}</h1>
 <span>
 
-{% if document %}
-<a href="{% url 'filemanager:download_file' document.filename|encoded_file_path %}">
+
+<a href="{% url 'filemanager:download_file' document.document.id %}">
 <i title="Download" class="fa-solid fa-download text-success fs-4"></i>
 </a>
 
-{% endif %}
+
 </span>
 <div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
 <i class="fa-solid fa-circle-xmark fs-5"></i>
@@ -305,15 +305,15 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 <div class="modal-body">
 {% if document.filename|file_extension in ".jpg, .png, .gif" %}
-<img height="700px" class="w-100" src="/media/{{ document.file }}" alt="df">
+<img height="700px" class="w-100" src="/media/{{ document.document.file }}" alt="df">
 {% elif document.filename|file_extension in ".mp4, .webm, .ogg" %}
 <video class="w-100" height="700" controls>
-<source src="/media/{{ document.file }}" type="video/mp4">
+<source src="/media/{{ document.document.file }}" type="video/mp4">
 </video>
 {% elif document.filename|file_extension in ".pdf, .txt" %}
-<iframe src="/media/{{ document.filename }}" width="100%" height="700px"></iframe>
+<iframe src="/media/{{ document.document.file }}" width="100%" height="700px"></iframe>
 {% elif document.filename|file_extension in ".csv" %}
-<pre class="bg-dark text-light p-3">{{ document.csv_text }}</pre>
+<pre class="bg-dark text-light p-3">{{ document.document.file }}</pre>
 {% endif %}
 </div>
 </div>
@@ -329,7 +329,7 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div><!-- .nk-block-head -->
 <div class="nk-block">
-
+{% if document.staff_comments.all %}
 {% for comment in document.staff_comments.all %}
 <div class="row gy-5">
 
@@ -509,6 +509,20 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <!-- .col -->
 </div><!-- .row -->
 {% endfor %}
+{% else %}
+<div class="row gy-5">
+
+<div class="col-lg-5">
+<div class="nk-block-head">
+    <div class="nk-block-head-content">
+        <h6 class="nk-block-title title">No Comments Yet!</h6>
+        <!-- <p>Submission date, approve date, status etc.</p> -->
+    </div>
+</div>
+</div>
+</div>
+
+{% endif %}
 </div><!-- .nk-block -->
 </div>
 </div>

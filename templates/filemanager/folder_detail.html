@@ -238,8 +238,9 @@
 
 
 <div class="nk-files-list">
-{% if not selected_directory %}
+<!-- {{ request.path }} -->
 
+{% if folder %}
 
 <div class="container-fluid py-4">
 <div class="row">
@@ -247,11 +248,13 @@
 <div class="d-flex justify-content-start my-2 ml-2">
 <label for="fileInput">
 <!-- <i class="icon ni ni-upload-cloud text-primary">Upload File</i> -->
-
-<i class="btn btn-primary" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em> <span>Upload File</span></i>
+<a href="#file-upload" class="btn btn-primary" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em> <span>Upload File</span></a>
 
 </label>
-<form method="post" action="{% url 'filemanager:upload_file' %}" id="upload-file" enctype="multipart/form-data">
+
+
+
+<form method="post" action="{% url 'filemanager:document_create' %}" id="upload-file" enctype="multipart/form-data">
 {% csrf_token %}
 <input type="hidden" name="directory" value="{{ selected_directory }}">
 <input id="fileInput" class="d-none" onchange="submitForm()" type="file" name="file" required>
@@ -259,8 +262,8 @@
 </div>
 
 
-{% if files %}
-{{files|length|json_script:"files-count"}}
+{% if staff_files %}
+{{staff_files|length|json_script:"files-count"}}
 <div class="table-responsive">
 <table class="table">
 <tr>
@@ -270,14 +273,14 @@
 </tr>
 
 
-{% for file in files %}
+{% for file in staff_files %}
 <tr data-bs-toggle="tooltip" title="{{file.file_path|info_value}}">
 <td>
 <span>
-{{ file.filename }} 
+{{ file.name }} 
 </span>
 </td>
-<td>{{ file.filename|file_extension|cut:"."|upper }}</td>
+<td>{{ file.name|file_extension|cut:"."|upper }}</td>
 
 <td>
 <div class="d-flex align-items-center actions">
@@ -295,18 +298,19 @@
 
 
 
-<div class="dot-separator mx-2"></div>
+<!-- <div class="dot-separator mx-2"></div>
 <span data-bs-toggle="modal"  data-bs-target="#info-{{forloop.counter}}">
 <i title="Info" class="fa-solid fa-info text-danger"></i>
-</span>
+</span> -->
 
 <div class="dot-separator mx-2"></div>
 <a href="#file-share-{{forloop.counter}}" data-toggle="modal"><em class="icon ni ni-share"></em></a>
 
+{% if file.get_shared_document %}
 <div class="dot-separator mx-2"></div>
-<a href="{% url 'filemanager:file_detail' file.filename|encoded_file_path %}"><em class="icon ni ni-zoom-in text-success"></em></a>
-
+<a href="{{ file.get_shared_document_url }} "><em class="icon ni ni-zoom-in text-success"></em></a>
 </div>
+{% endif %}
 
 </td>
 </tr>
@@ -318,9 +322,9 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <div class="modal-dialog modal-dialog-centered modal-xl">
 <div class="modal-content">
 <div class="modal-header">
-<h1 class="modal-title fs-5" id="staticBackdropLabel">{{ file.filename }}</h1>
+<h1 class="modal-title fs-5" id="staticBackdropLabel">{{ file.name }}</h1>
 <span>
-<a href="{% url 'filemanager:download_file' file.file|encoded_file_path %}">
+<a href="{{ file.download_url }}">
 <i title="Download" class="fa-solid fa-download text-success fs-4"></i>
 </a>
 </span>
@@ -329,16 +333,17 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 <div class="modal-body">
-{% if file.filename|file_extension in ".jpg, .png, .gif" %}
+{% if file.name|file_extension in ".jpg, .png, .gif" %}
 <img height="700px" class="w-100" src="/media/{{ file.file }}" alt="df">
-{% elif file.filename|file_extension in ".mp4, .webm, .ogg" %}
+{% elif file.name|file_extension in ".mp4, .webm, .ogg" %}
 <video class="w-100" height="700" controls>
 <source src="/media/{{ file.file }}" type="video/mp4">
 </video>
-{% elif file.filename|file_extension in ".pdf, .txt" %}
+
+{% elif file.name|file_extension in ".pdf, .txt" %}
 <iframe src="/media/{{ file.file }}" width="100%" height="700px"></iframe>
 
-{% elif file.filename|file_extension in ".csv" %}
+{% elif file.name|file_extension in ".csv" %}
 <pre class="bg-dark text-light p-3">{{ file.csv_text }}</pre>
 {% endif %}
 </div>
@@ -354,11 +359,11 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <h1 class="modal-title fs-5" id="exampleModalLabel">Delete File</h1>
 </div>
 <div class="modal-body">
-{{file.filename}}
+{{file.name}}
 </div>
 <div class="modal-footer">
 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-<a class="btn btn-danger" href="{% url 'filemanager:delete_file' file.file|encoded_file_path %}">Delete</a>
+<a class="btn btn-danger" href="{{ file.delete_url }}">Delete</a>
 </div>
 </div>
 </div>
@@ -375,7 +380,7 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 <div class="modal-body">
-<form action="{% url 'filemanager:save_info' file.file_path|encoded_file_path %}" method="post">
+<form action="." method="post">
 {% csrf_token %}
 <div class="form-group mb-2">
 <label for="" class="form-label">File Info</label>
@@ -411,7 +416,7 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <div class="modal-content">
 <div class="modal-header align-center">
 <div class="nk-file-title">
-<form action="{% url 'filemanager:share_file' file.file|encoded_file_path %}" method="post">
+<form action="." method="post">
 {% csrf_token %}
 <div class="nk-file-name">
 <div class="nk-file-name"><span class="title">{{ file.filename }}</span></div>
@@ -425,11 +430,11 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <div class="nk-file-share-group">
 <div class="nk-file-share-input-group">
 <div class="nk-file-share-input nk-file-share-input-to">
-{{ form.share_with|as_crispy_field }}
+
 </div>
 <input type="hidden" value="{{file.filename}}" name="filename" id="" class="form-control">
 
-<input type="hidden" value="{{file.file|encoded_file_path}}" name="encoded_path" id="" class="form-control">
+<input type="hidden" value="" name="encoded_path" id="" class="form-control">
 <input type="hidden" value="{{file.file_path}}" name="path" id="" class="form-control">
 <div class="form-group mb-2">
 <label for="" class="form-label">Remarks</label>
@@ -470,10 +475,10 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 </span>
 </div> -->
 
-<form action="{% url 'filemanager:share_file' file.file|encoded_file_path %}" method="post">
+<form action="{% url 'filemanager:share_file' file.id %}" method="post">
 {% csrf_token %}
 <div class="nk-file-name">
-<div class="nk-file-name"><span class="title">{{ file.filename }}</span></div>
+<div class="nk-file-name"><span class="title">{{ file.name }}</span></div>
 <div class="nk-file-name-sub">12.0MB</div>
 </div>
 </div>
@@ -486,20 +491,22 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 <div class="nk-file-share-input nk-file-share-input-to">
 <!-- <label class="label">To</label> -->
 <!-- <input type="text" class="input-mail tagify" placeholder="Email or Name" data-whitelist="team@softnio.com, help@softnio.com, contact@softnio.com"> -->
-{{ form.share_with|as_crispy_field }}
+{{ share_form.share_with|as_crispy_field }}
+
+
 </div>
 
 <!-- <div class="form-group mb-2">
 <label for="" class="form-label">File Name</label> -->
-<input type="hidden" value="{{file.filename}}" name="filename" id="" class="form-control">
+<input type="hidden" value="{{file.name}}" name="filename" id="" class="form-control">
 <!-- </div> -->
 
-<input type="hidden" value="{{file.file|encoded_file_path}}" name="encoded_path" id="" class="form-control">
+<!-- <input type="text" value="" name="encoded_path" id="" class="form-control"> -->
 
 
 <!-- <div class="form-group mb-2">
 <label for="" class="form-label">File Path</label> -->
-<input type="hidden" value="{{file.file_path}}" name="path" id="" class="form-control">
+<!-- <input type="text" value="{{file.file_path}}" name="path" id="" class="form-control"> -->
 <!-- </div> -->
 
 <!-- div class="form-group mb-2">
@@ -781,6 +788,9 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 </div><!-- .modal-content -->
 </div><!-- .modla-dialog -->
 </div><!-- .modal -->
+
+
+
 <!-- @@ Move File Modal @e -->
 <div class="modal fade" tabindex="-1" role="dialog" id="file-move">
 <div class="modal-dialog modal-md" role="document">
@@ -1022,6 +1032,9 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 </div><!-- .modal-content -->
 </div><!-- .modla-dialog -->
 </div><!-- .modal -->
+
+
+
 <!-- @@ File Upload Modal @e -->
 <div class="modal fade" tabindex="-1" role="dialog" id="file-upload">
 <div class="modal-dialog modal-md" role="document">
@@ -1032,24 +1045,39 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 <h5 class="title mb-3">Upload File</h5>
 
 
-<form method="post" action="{% url 'filemanager:upload_file' %}" id="upload-file" enctype="multipart/form-data">
+<form method="post" action="{% url 'filemanager:create_document' %}" id="upload-file" enctype="multipart/form-data">
 {% csrf_token %}
-<input type="hidden" name="directory" value="{{ selected_directory }}">
-<input id="fileInput" class="d-none" onchange="submitForm()" type="file" name="file" required>
-</form>
+<!-- <input type="hidden" name="directory" value="{{ selected_directory }}">
+<input id="fileInput" class="d-none" onchange="submitForm()" type="file" name="file" required> -->
 
-<div class="upload-zone small bg-lighter">
+<!-- <label>Author</label>
+<input type="text" name="author" value="{{ request.user }}"> -->
+
+<!-- {{ form.file|as_crispy_field }} -->
+
+
+<!-- <label>Folder</label>
+<input type="text" name="folder" value="{{ folder}}" class= "form-control" readonly /> </br>
+
+
+<label>Modified By</label>
+<input type="text" name="modified_by" value="{{ request.user }}"> -->
+<div class="ddz-message-text bg-lighter py-4 px-3">
+<input type="file" name="file" class="text-primary">
+</div>
+
+<!-- <div class="upload-zone small bg-lighter">
 <div class="dz-message" data-dz-message>
 <span class="dz-message-text"><span>Drag and drop</span> file here or <span>browse</span></span>
 </div>
-
-
+</div> -->
 
 
 
 </div>
-</div>
-<div class="nk-upload-list">
+
+
+<!-- <div class="nk-upload-list">
 <h6 class="title">Uploaded Files</h6>
 <div class="nk-upload-item">
 <div class="nk-upload-icon">
@@ -1099,19 +1127,27 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 <a href="#" class="btn btn-icon btn-trigger" data-dismiss="modal"><em class="icon ni ni-trash"></em></a>
 </div>
 </div>
-</div>
+</div> -->
+
+
 <div class="nk-modal-action justify-end">
 <ul class="btn-toolbar g-4 align-center">
-<li><a href="#" class="link link-primary">Cancel</a></li>
+<!-- <li><a href="{{request.META.HTTP_REFERER}}" class="link link-primary">Cancel</a></li> -->
+<button type="button" class="btn btn-danger mr-3" data-bs-dismiss="modal">Cancel</button>
 
 
-<li><button class="btn btn-primary">Add Files</button></li>
+<!-- <li><button class="btn btn-primary">Add Files</button></li> -->
+<button type="submit" class="btn btn-primary mr-2">Upload</button>
 </ul>
+
+</form>
 </div>
 </div>
 </div><!-- .modal-content -->
 </div><!-- .modla-dialog -->
 </div><!-- .modal -->
+
+
 
 
 {% endblock %}

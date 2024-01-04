@@ -160,6 +160,9 @@ STATICFILES_DIRS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
 # Messages
 MESSAGE_TAGS = {
     messages.ERROR: 'danger'

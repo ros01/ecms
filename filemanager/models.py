@@ -143,8 +143,8 @@ def pre_save_folder_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_folder_receiver, sender=Folder)
 
 
-class FileDetail(models.Model):
-    name = models.URLField()
+class Document(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True,)
     # path = models.URLField()
     # encoded_path = models.FileField()
     folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
@@ -164,10 +164,10 @@ class FileDetail(models.Model):
     shared = None
 
     def delete(self, *args, **kwargs):
-        bytes_to_free = self.size
+        # bytes_to_free = self.size
         super().delete(*args, **kwargs)
-        storage_qs = UserStorage.objects.filter(pk=self.author.storage.pk)
-        storage_qs.update(bytes_used=F("bytes_used") - bytes_to_free)
+        # storage_qs = UserStorage.objects.filter(pk=self.author.storage.pk)
+        # storage_qs.update(bytes_used=F("bytes_used") - bytes_to_free)
 
     @classmethod
     def shared_user_model(cls):
@@ -178,16 +178,16 @@ class FileDetail(models.Model):
         return cls.objects.filter(name=name, folder=folder).exists()
 
     def __str__(self):
-        return self.name
+        return str(self.name)
 
     def save(self, **kwargs):
-        if not self.pk and FileDetail.already_exists(self.name, self.folder):
+        if not self.pk and Document.already_exists(self.name, self.folder):
             raise DuplicateDocumentNameError(f"{self.name} already exists in this folder.")
         self.touch(self.author, commit=False)
         super().save(**kwargs)
 
     def get_absolute_url(self):
-        return reverse("filemanager:file_detail", args=[self.pk])
+        return reverse("filemanager:document_detail", args=[self.pk])
 
     def unique_id(self):
         return "d-%d" % self.id
@@ -199,6 +199,20 @@ class FileDetail(models.Model):
             if self.folder:
                 self.folder.touch(user)
             self.save()
+
+
+    @property
+    def get_shared_document(self):
+        sharedDocument = self.shareddocument_set.first()
+        return sharedDocument 
+
+
+    def get_shared_document_url(self):
+        url_kwargs={
+            'd_id': self.id,
+            's_id': self.get_shared_document.id,
+        }
+        return reverse('filemanager:shared_document_details', kwargs=url_kwargs)
 
     @property
     def size(self):
@@ -255,14 +269,21 @@ class FileDetail(models.Model):
 
     def download_url(self):
         return reverse(
-            "filemanager:download_file",
-            args=[self.pk]
+            "filemanager:download",
+            args=[self.id]
+        )
+
+
+    def download_iframe_url(self):
+        return reverse(
+            "filemanager:download_iframe",
+            args=[self.id]
         )
 
     def delete_url(self):
         return reverse(
             "filemanager:delete_file",
-            args=[self.pk]
+            args=[self.id]
         )
 
 
@@ -281,12 +302,13 @@ class StaffComments(models.Model):
     
 
 
-class Document(models.Model):
+class SharedDocument(models.Model):
     filename = models.CharField(max_length=255)
     # folder = models.ForeignKey(Folder, null=True, blank=True, on_delete=models.CASCADE)
-    path = models.URLField()
-    encoded_path = models.FileField()
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='authors', on_delete=models.CASCADE)
+    # path = models.URLField()
+    # file = models.FileField()
+    document = models.ForeignKey(Document, null=True, blank=True, on_delete=models.CASCADE)
+    shared_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='authors', on_delete=models.CASCADE)
     created = models.DateTimeField(default=timezone.now)
     modified = models.DateTimeField(default=timezone.now)
     share_with = models.ManyToManyField(User, related_name='shared_users')
@@ -296,6 +318,14 @@ class Document(models.Model):
 
     def __str__(self):
         return self.filename
+
+
+    def get_shared_document_url(self):
+        url_kwargs={
+            'd_id': self.document.id,
+            's_id': self.id,
+        }
+        return reverse('filemanager:shared_document_details', kwargs=url_kwargs)
 
     # def save(self, **kwargs):
     #     if not self.pk and Document.already_exists(self.filename, self.folder):

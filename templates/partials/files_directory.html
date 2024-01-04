@@ -5,11 +5,24 @@
   {{ event.users.count }} people attending
 </p>
 <p>{% lorem %}</p>
+
+{% if user in document.users.all %}
 <button id="share-btn"
 class="btn btn-primary"
 hx-post="{% url 'filemanager:share' document.pk' %}"
-hx-target="#userlist">
+hx-target="#userlist"
+hx-swap="outerHTML"
+hx-swap="outerHTML">
 Share</button>
+
+{% else %}
+<button id="share-btn"
+class="btn btn-primary"
+hx-post="{% url 'filemanager:share' document.pk' %}"
+hx-target="#userlist"
+hx-swap="beforeend">
+Share</button>
+{% endif %}
 
 
 <a href="#file-upload" class="btn btn-primary" data-toggle="modal"><em class="icon ni ni-upload-cloud"></em> <span>Upload</span></a>
