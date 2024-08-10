@@ -66,6 +66,15 @@ class FolderCreate(CreateView):
         # folder.share(folder.shared_parent().shared_with())
         return folder
 
+    def get_context_data(self, directory='', **kwargs):
+        context = super().get_context_data(**kwargs)
+        breadcrumbs = get_breadcrumbs(self.request)
+        ctx = {
+            'breadcrumbs': breadcrumbs,
+        }
+        context.update(ctx)
+        return context
+
     def get_success_url(self):
         return reverse("filemanager:folder_list")
 
