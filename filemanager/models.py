@@ -143,6 +143,11 @@ def pre_save_folder_receiver(sender, instance, *args, **kwargs):
 pre_save.connect(pre_save_folder_receiver, sender=Folder)
 
 
+def document_upload_path(instance, filename):
+    folder_name = instance.folder.name if instance.folder else "unassigned"
+    return f"uploads/{folder_name}/{filename}"
+
+
 class Document(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True,)
     # path = models.URLField()
@@ -153,7 +158,8 @@ class Document(models.Model):
     modified = models.DateTimeField(default=timezone.now)
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.CASCADE)
     # file = models.FileField(upload_to=uuid_filename)
-    file = models.FileField(upload_to='%Y/%m/%d/', blank=True, null=True)
+    file = models.FileField(upload_to=document_upload_path)
+    # file = models.FileField(upload_to='%Y/%m/%d/', blank=True, null=True)
     
     # original_filename = models.CharField(max_length=500)
 
@@ -174,15 +180,27 @@ class Document(models.Model):
         return DocumentSharedUser
 
     @classmethod
-    def already_exists(cls, name, folder=None):
-        return cls.objects.filter(name=name, folder=folder).exists()
+    def already_exists(cls, name, folder=None, user=None):
+        qs = cls.objects.filter(name=name, folder=folder)
+        if user:
+            qs = qs.filter(author=user)  # Restrict to user's own documents
+        return qs.exists()
+
+
+    # @classmethod
+    # def already_exists(cls, name, folder=None):
+    #     return cls.objects.filter(name=name, folder=folder).exists()
 
     def __str__(self):
         return str(self.name)
 
     def save(self, **kwargs):
-        if not self.pk and Document.already_exists(self.name, self.folder):
+
+        if not self.pk and Document.already_exists(self.name, self.folder, user=self.author):
             raise DuplicateDocumentNameError(f"{self.name} already exists in this folder.")
+
+        # if not self.pk and Document.already_exists(self.name, self.folder):
+        #     raise DuplicateDocumentNameError(f"{self.name} already exists in this folder.")
         self.touch(self.author, commit=False)
         super().save(**kwargs)
 
@@ -201,18 +219,38 @@ class Document(models.Model):
             self.save()
 
 
+    # @property
+    # def get_shared_document(self):
+    #     sharedDocument = self.shareddocument_set.first()
+    #     return sharedDocument 
+
     @property
     def get_shared_document(self):
-        sharedDocument = self.shareddocument_set.first()
-        return sharedDocument 
+        return self.shareddocument_set.all()
 
+    @property
+    def get_shared_documents(self):
+        return self.shareddocument_set.all()  # Returns a queryset of shared documents
 
     def get_shared_document_url(self):
-        url_kwargs={
-            'd_id': self.id,
-            's_id': self.get_shared_document.id,
-        }
-        return reverse('filemanager:shared_document_details', kwargs=url_kwargs)
+        shared_docs = self.get_shared_documents  # ✅ Accessing it as a property (correct)
+        if shared_docs.exists():
+            return reverse('filemanager:shared_document_details', kwargs={'d_id': self.id, 's_id': shared_docs.first().id})
+        return None
+
+
+    # def get_shared_document_url(self):
+    #     shared_docs = self.get_shared_documents()
+    #     if shared_docs.exists():
+    #         return reverse('filemanager:shared_document_details', kwargs={'d_id': self.id, 's_id': shared_docs.first().id})
+    #     return None
+
+    # def get_shared_document_url(self):
+    #     url_kwargs={
+    #         'd_id': self.id,
+    #         's_id': self.get_shared_document.id,
+    #     }
+    #     return reverse('filemanager:shared_document_details', kwargs=url_kwargs)
 
     @property
     def size(self):
@@ -245,7 +283,7 @@ class Document(models.Model):
     def shared_ui(self):
         return False
 
-    def shared_with(self, user=None):
+    def shared_with0(self, user=None):
         """
         Returns a User queryset of users shared on this folder, or, if user
         is given optimizes the check and returns boolean.
@@ -257,6 +295,13 @@ class Document(models.Model):
         if not qs.exists():
             return User.objects.none()
         return User.objects.filter(pk__in=qs.values("user"))
+
+    def shared_with(self, user=None):
+        if user:
+            return self.shared_queryset().filter(user=user).exists()
+        return get_user_model().objects.filter(pk__in=self.shared_queryset().values("user"))
+
+
 
     def share(self, users):
         users = [u for u in users if not self.shared_with(user=u)]

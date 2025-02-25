@@ -8,7 +8,18 @@
 
 {% block body %}
 <div class="pinax-documents-document-create-container">
-    <h2>
+    <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="folder_id" value="{{ folder.id }}">
+    <button type="submit">Upload Documents</button>
+</form>
+
+
+
+
+
+    <!-- <h2>
         Upload file{% if folder %} in {{ folder.name }}{% endif %}
     </h2>
 
@@ -27,6 +38,6 @@
         <div class="form-actions">
             <button>Upload</button>
         </div>
-    </form>
+    </form> -->
 </div>
 {% endblock %}

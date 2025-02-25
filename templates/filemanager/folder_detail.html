@@ -150,6 +150,7 @@
 </ul>
 </div>
 </div>
+
 <div class="nk-fmg-body-content">
 <div class="nk-block-head nk-block-head-sm">
 <div class="nk-block-between position-relative">
@@ -252,8 +253,6 @@
 
 </label>
 
-
-
 <form method="post" action="{% url 'filemanager:document_create' %}" id="upload-file" enctype="multipart/form-data">
 {% csrf_token %}
 <input type="hidden" name="directory" value="{{ selected_directory }}">
@@ -286,14 +285,25 @@
 <div class="d-flex align-items-center actions">
 
 <div class="dot-separator mx-2"></div>
-<span data-bs-toggle="modal" data-bs-target="#file-{{forloop.counter}}">
+
+
+
+
+<a href="#file-{{forloop.counter}}" data-toggle="modal"><em class="fa-solid fa-eye text-primary"></em></a>
+<!-- <span data-bs-toggle="modal" data-bs-target="#file-{{forloop.counter}}">
 <i title="View" class="fa-solid fa-eye text-primary"></i>
-</span>
+</span> -->
+
+
+
+
+
 
 <div class="dot-separator mx-2"></div>
-<span data-bs-toggle="modal" data-bs-target="#delete-{{forloop.counter}}">
+<a href="#delete-{{forloop.counter}}" data-toggle="modal"><em class="fa-solid fa-trash text-danger"></em></a>
+<!-- <span data-bs-toggle="modal" data-bs-target="#delete-{{forloop.counter}}">
 <i title="Delete" class="fa-solid fa-trash text-danger"></i>
-</span>
+</span> -->
 
 
 
@@ -322,14 +332,16 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 <div class="modal-content">
 <div class="modal-header">
 <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ file.name }}</h1>
-<span>
+
+
+<div class=""><span>
 <a href="{{ file.download_url }}">
 <i title="Download" class="fa-solid fa-download text-success fs-4"></i>
 </a>
-</span>
-<div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
+</span><a href="#" class="close" data-dismiss="modal"><em class="icon ni ni-cross-sm"></em></a></div>
+<!-- <div class="" id="modal-close-btn-{{forloop.counter}}" data-bs-dismiss="modal" aria-label="Close">
 <i class="fa-solid fa-circle-xmark fs-5"></i>
-</div>
+</div> -->
 </div>
 <div class="modal-body">
 {% if file.name|file_extension in ".jpg, .png, .gif" %}
@@ -350,6 +362,8 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 
+
+
 <!-- Delete Modal -->
 <div class="modal fade" id="delete-{{forloop.counter}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 <div class="modal-dialog">
@@ -361,7 +375,8 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 {{file.name}}
 </div>
 <div class="modal-footer">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+<!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> -->
+<a href="#" class="btn btn-secondary" data-dismiss="modal">Cancel</a>
 <a class="btn btn-danger" href="{{ file.delete_url }}">Delete</a>
 </div>
 </div>
@@ -409,6 +424,9 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 
+
+
+
 <!-- Detail Modal -->
 <div class="modal fade" tabindex="-1" role="dialog" id="file-detail-{{forloop.counter}}">
 <div class="modal-dialog modal-md" role="document">
@@ -443,6 +461,10 @@ tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 </div>
 </div>
 </div><!-- .modal-body -->
+
+
+
+
 
 <div class="modal-footer bg-light">
 <button type="submit" class="btn btn-primary">Share</button>
@@ -1063,6 +1085,8 @@ c1.6,0,3.2,0.2,3.9,2.3l2.7,6.8c0.5,1.1,1.6,1.9,2.8,1.9h23.5c2.2,0,3.9,1.8,3.9,4v
 <input type="text" name="modified_by" value="{{ request.user }}"> -->
 <div class="ddz-message-text bg-lighter py-4 px-3">
 <input type="file" name="file" class="text-primary">
+<input type="hidden" name="folder_id" value="{{ folder.id }}">
+
 </div>
 
 <!-- <div class="upload-zone small bg-lighter">

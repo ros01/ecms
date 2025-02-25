@@ -5,6 +5,34 @@ User = get_user_model()
 
 
 
+class DocumentCreateForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ["file", "folder"]
+        widgets = {
+            "folder": forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Ensure folder is pre-set if passed
+        if "instance" in kwargs and kwargs["instance"].folder:
+            self.fields["folder"].initial = kwargs["instance"].folder
+
+    def clean(self):
+        """Ensure no duplicate filenames within the same folder."""
+        cleaned_data = super().clean()  # Important to call the parent clean() method
+
+        file = cleaned_data.get("file")
+        folder = cleaned_data.get("folder")
+
+        if file and folder:
+            if Document.already_exists(file.name, folder):
+                raise forms.ValidationError(f"A file named '{file.name}' already exists in this folder.")
+        
+        return cleaned_data
+
 class FolderCreateForm(forms.ModelForm):
 
     class Meta:
@@ -25,8 +53,35 @@ class FolderCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["parent"].queryset = folders
 
-
 class DocumentCreateForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ["file", "folder"]
+        widgets = {
+            "folder": forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Ensure folder is pre-set if passed
+        if "instance" in kwargs and kwargs["instance"].folder:
+            self.fields["folder"].initial = kwargs["instance"].folder
+
+    def clean(self):
+        """Ensure no duplicate filenames within the same folder."""
+        cleaned_data = super().clean()  # Important to call the parent clean() method
+
+        file = cleaned_data.get("file")
+        folder = cleaned_data.get("folder")
+
+        if file and folder:
+            if Document.already_exists(file.name, folder):
+                raise forms.ValidationError(f"A file named '{file.name}' already exists in this folder.")
+        
+        return cleaned_data
+
+class DocumentCreateForm0(forms.ModelForm):
 
     class Meta:
         model = Document

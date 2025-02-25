@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView, FormView, ListView
 from django.views.generic.base import View
 from django.shortcuts import render, get_object_or_404, redirect, HttpResponse, HttpResponseRedirect
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse, HttpResponseRedirect
 from django.shortcuts import render, reverse,redirect
 from django.views.generic.detail import BaseDetailView, SingleObjectTemplateResponseMixin
 from .models import *
@@ -27,7 +27,7 @@ from django.views.generic import (
     DetailView,
     TemplateView,
 )
-
+from django.urls import reverse
 
 
 class FolderCreate(CreateView):
@@ -171,8 +171,103 @@ class FolderList(ListView):
 
 
 
-
 class FolderDetail(DetailView):
+    model = Folder
+    template_name = "filemanager/folder_detail.html"
+
+    def get_files_from_directory(self, directory_path):
+        """ Retrieves a list of files from the given directory. """
+        files = []
+        if os.path.exists(directory_path) and os.path.isdir(directory_path):
+            for filename in os.listdir(directory_path):
+                file_path = os.path.join(directory_path, filename)
+                if os.path.isfile(file_path):
+                    try:
+                        _, extension = os.path.splitext(filename)
+                        csv_text = convert_csv_to_text(file_path) if extension.lower() == '.csv' else ''
+
+                        files.append({
+                            'file': file_path.split(os.sep + 'media' + os.sep)[1],
+                            'filename': filename,
+                            'file_path': file_path,
+                            'csv_text': csv_text
+                        })
+                    except Exception as e:
+                        print(f"Error processing {filename}: {str(e)}")
+        return files
+
+    def generate_nested_directory(self, root_path, current_path):
+        """ Recursively generates a nested directory structure. """
+        directories = []
+        for name in os.listdir(current_path):
+            dir_path = os.path.join(current_path, name)
+            if os.path.isdir(dir_path):
+                unique_id = str(uuid.uuid4())
+                nested_directories = self.generate_nested_directory(root_path, dir_path)
+                directories.append({
+                    'id': unique_id, 
+                    'name': name, 
+                    'path': os.path.relpath(dir_path, root_path), 
+                    'directories': nested_directories
+                })
+        return directories
+
+    def get_queryset(self):
+        """ Ensures the user only accesses their allowed folders. """
+        qs = super().get_queryset()
+        return qs.filter(author=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        """ Adds additional data to the template context. """
+        context = super().get_context_data(**kwargs)
+
+        # Initialize forms properly
+        form = DocumentCreateForm()
+        share_form = DocumentShareForm()
+
+        # Media root directory
+        media_path = settings.MEDIA_ROOT
+        directories = self.generate_nested_directory(media_path, media_path)
+
+        # Fetch the directory files
+        selected_directory = self.request.GET.get("directory", "")
+        selected_directory_path = os.path.join(media_path, selected_directory)
+        files = self.get_files_from_directory(selected_directory_path) if os.path.isdir(selected_directory_path) else []
+
+        # Fetch related data
+        folder = get_object_or_404(Folder, author=self.request.user, slug=self.kwargs.get("slug"))
+
+        staff_files = Document.objects.filter(folder=folder, author=self.request.user)
+
+        # folder = get_object_or_404(Folder, Q(author=self.request.user) | Q(shared_with=self.request.user), slug=self.kwargs.get("slug"))
+
+        # staff_files = Document.objects.filter(folder=folder).filter(Q(author=self.request.user) | Q(shared_with=self.request.user))
+
+        # folder = get_object_or_404(Folder, author=self.request.user, slug=self.kwargs.get("slug"))
+        # folder = get_object_or_404(Folder, author=self.request.user)
+        # staff_files = Document.objects.filter(author=self.request.user)
+        staff_comment = StaffComments.objects.filter(status=2)
+
+        ctx = {
+            'directories': directories,
+            'files': files,
+            'folder': folder,
+            'staff_files': staff_files,
+            'selected_directory': selected_directory,
+            'segment': 'file_manager',
+            'breadcrumbs': get_breadcrumbs(self.request),  # Ensure this function exists
+            'form': form,
+            'share_form': share_form,
+            'media_path': media_path,
+            'selected_directory_path': selected_directory_path,
+            'staff_comment': staff_comment,
+        }
+
+        context.update(ctx)
+        return context
+
+
+class FolderDetail0(DetailView):
     model = Folder
     form = DocumentCreateForm
     share_form = DocumentShareForm
@@ -231,7 +326,8 @@ class FolderDetail(DetailView):
             files = get_files_from_directory(selected_directory_path)
 
         breadcrumbs = get_breadcrumbs(self.request)
-        folder = Folder.objects.filter(author=self.request.user).first()
+        folder = get_object_or_404(Folder, author=self.request.user, slug=self.kwargs.get("slug"))
+        # folder = Folder.objects.filter(author=self.request.user).first()
         # document_filepath = media_path
         staff_files = Document.objects.filter(author=self.request.user)
         # shared_document = SharedDocument.objects.filter(document=staff_files.get_shared_document)
@@ -261,7 +357,7 @@ class FolderDetail(DetailView):
 
 
 
-class DocumentCreate(CreateView):
+class DocumentCreateX(CreateView):
     model = Document
     form_class = DocumentCreateForm
     template_name = "filemanager/file_create.html"
@@ -311,7 +407,71 @@ class DocumentCreate(CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-def create_document(request):
+
+
+
+class DocumentCreate(CreateView):
+    model = Document
+    form_class = DocumentCreateForm
+    template_name = "filemanager/file_create.html"
+    folder = None  # Store the selected folder
+
+    def get(self, request, *args, **kwargs):
+        """If a folder ID is provided, attach the document to that folder."""
+        if "folder_id" in request.GET:
+            self.folder = get_object_or_404(Folder, id=request.GET["folder_id"], author=request.user)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        """Pass the selected folder to the template context."""
+        kwargs.setdefault("folder", self.folder)
+        return super().get_context_data(**kwargs)
+
+    def get_initial(self):
+        """Prepopulate form with folder if applicable."""
+        initial = super().get_initial()
+        if self.folder:
+            initial["folder"] = self.folder
+        return initial
+
+    def get_success_url(self):
+        """Redirect to the folder view after document creation."""
+        return reverse("filemanager:folder_detail", kwargs={"slug": self.folder.slug} if self.folder else {})
+
+    def form_valid(self, form):
+        """Save the document with the correct folder and author."""
+        form.instance.author = self.request.user
+        if self.folder:
+            form.instance.folder = self.folder
+        return super().form_valid(form)
+
+
+def document_create(request):
+    if request.method == "POST":
+        directory = request.POST.get("directory")
+        uploaded_file = request.FILES.get("file")
+
+        if not uploaded_file:
+            messages.error(request, "No file uploaded")
+            return redirect("filemanager:folder_list")
+
+        # Ensure the directory is valid
+        if not directory:
+            directory = "default_folder"  # Set a default if missing
+
+        file_instance = FileModel.objects.create(
+            file=uploaded_file,
+            directory=directory,  # Ensure directory is saved correctly
+            uploaded_by=request.user
+        )
+
+        messages.success(request, "File uploaded successfully")
+        return redirect("filemanager:folder_list")
+
+    return render(request, "filemanager/upload.html")
+
+
+def create_document0(request):
     form = DocumentCreateForm
     # path = file_path.replace('%slash%', '/')
     # absolute_file_path = os.path.join(settings.MEDIA_ROOT, path)
@@ -344,6 +504,51 @@ def create_document(request):
         messages.success(request, ('Document Creation Successful'))
 
     return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+
+def create_document(request):
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("file")
+        author = request.user
+        modified_by = request.user
+
+        # Get folder_id safely
+        folder_id = request.POST.get("folder_id", "").strip()  
+        print(f"Received folder_id: '{folder_id}'")  # Debugging
+        print("Request POST Data:", request.POST)  # Debugging
+
+        if not folder_id.isdigit():
+            messages.error(request, f"Invalid folder selected. Received: '{folder_id}'")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        folder = Folder.objects.filter(id=int(folder_id), author=author).first()
+
+        if not uploaded_file:
+            messages.error(request, "No file uploaded.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        if not folder:
+            messages.error(request, "Folder not found or unauthorized access.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        # Debugging
+        print(f"Uploading File: {uploaded_file.name}")
+        print(f"Saving in Folder: {folder.name}")
+
+        # Create Document
+        document = Document.objects.create(
+            name=str(uploaded_file.name),
+            author=author,
+            modified_by=modified_by,
+            folder=folder,
+            file=uploaded_file,
+        )
+
+        messages.success(request, "Document uploaded successfully!")
+
+    return redirect(request.META.get("HTTP_REFERER"))
 
 
 
